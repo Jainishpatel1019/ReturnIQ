@@ -53,7 +53,7 @@ def main():
         print(f"  AUUC OLS baseline : {auuc_ols:.4f}")
         lift = (auuc_model - auuc_ols) / abs(auuc_ols) * 100 if auuc_ols != 0 else float("inf")
         print(f"  Lift over OLS     : +{lift:.1f}%")
-    print(f"  AUUC random       : 0.0000")
+    print("  AUUC random       : 0.0000")
     print("────────────────────────────────────────────────────────")
 
     if auuc_model >= 0.68:
