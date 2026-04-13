@@ -1,0 +1,38 @@
+# ── Secrets ────────────────────────────────────────────────────────────────────
+.env
+push_to_hf.py
+
+# ── Python ─────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# ── OS ─────────────────────────────────────────────────────────────────────────
+.DS_Store
+.venv/
+venv/
+dist/
+build/
+
+# ── Model artifacts (large binaries) ───────────────────────────────────────────
+*.pkl
+*.duckdb
+
+# ── Data (too large / raw PII risk) ────────────────────────────────────────────
+data/raw/
+data/processed/
+data/embeddings/
+
+# ── Trained models ─────────────────────────────────────────────────────────────
+models/
+mlruns/
+
+# ── Streamlit local config ──────────────────────────────────────────────────────
+.streamlit/
+streamlit_app/.streamlit/
+
+# ── Deployment bundle (HuggingFace target — generated, not source) ─────────────
+deploy/
+
+# ── Logs ───────────────────────────────────────────────────────────────────────
+*.log

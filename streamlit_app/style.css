@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+.stApp { background-color: #0d1117; }
+[data-testid="stSidebar"] { background-color: #010409; border-right: 1px solid #21262d; }
+.block-container { padding: 2rem 2.5rem; max-width: 1200px; }
+h1 { font-family: 'Inter', sans-serif; font-size: 22px; font-weight: 600; color: #f0f6fc; letter-spacing: -0.3px; }
+h2, h3 { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; color: #e6edf3; }
+[data-testid="stMetric"] { background-color: #161b22; border: 1px solid #21262d; border-radius: 10px; border-left: 3px solid #5b8fff; }
+[data-testid="stMetricLabel"] { font-size: 11px; text-transform: uppercase; color: #8b949e; letter-spacing: 0.05em; font-family: 'Inter', sans-serif; }
+[data-testid="stMetricValue"] { font-size: 28px; font-weight: 600; color: #f0f6fc; font-family: 'Inter', sans-serif; }
+.stButton > button { background-color: #21262d; border: 1px solid #30363d; border-radius: 8px; }
+.stButton > button:hover { background-color: #30363d; }
+.stSelectbox, .stTextInput { background-color: #161b22; border: 1px solid #30363d; border-radius: 8px; }
+[data-testid="stSlider"] .st-eb { background-color: #5b8fff; }
+[data-testid="stSlider"] .stSliderThumb { background-color: #5b8fff; }
+hr { border-color: #21262d; }
+[data-testid="stAlert"] { border-radius: 8px; font-size: 13px; }
+#MainMenu, footer, header { visibility: hidden; }
+.stDeployButton { display: none; }
