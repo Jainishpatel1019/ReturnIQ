@@ -46,7 +46,8 @@ def run_audit(db_path: str = DB_PATH) -> dict:
     results = gdf.validate()
     pass_rate = results["statistics"]["success_percent"]
 
-    print(f"\n{'✓' if pass_rate >= 95 else '✗'} Pass rate: {pass_rate:.1f}%")
+    icon = "✓" if pass_rate >= 95 else "✗"
+    print(f"\n{icon} Pass rate: {pass_rate:.1f}%")
 
     if pass_rate < 95:
         print("⚠  WARNING: Pass rate < 95%. Check for nulls in 'text' column.")

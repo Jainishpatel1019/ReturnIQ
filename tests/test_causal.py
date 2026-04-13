@@ -5,7 +5,6 @@ Run: pytest tests/ -v
 
 import pytest
 import pandas as pd
-import numpy as np
 import pathlib
 
 

@@ -39,7 +39,10 @@ def apply_chart_theme(fig, height=380):
     return fig, {"displayModeBar": False, "responsive": True}
 
 def page_header(title, subtitle, status="Live", ok=True):
-    pill_style = "background-color: #3fb95022; color: #3fb950; border: 1px solid #3fb95044;" if ok else "background-color: #d2992222; color: #d29922; border: 1px solid #d2992244;"
+    if ok:
+        pill_style = "background-color: #3fb95022; color: #3fb950; border: 1px solid #3fb95044;"
+    else:
+        pill_style = "background-color: #d2992222; color: #d29922; border: 1px solid #d2992244;"
     return f"""
 <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #21262d; padding-bottom: 20px; margin-bottom: 24px;">
 <div>
@@ -51,7 +54,8 @@ def page_header(title, subtitle, status="Live", ok=True):
 """.strip()
 
 def risk_badge(cate, low=0.01, high=0.04):
-    if pd.isna(cate): return ""
+    if pd.isna(cate):
+        return ""
     color = "#f85149" if cate >= high else "#d29922" if cate >= low else "#3fb950"
     text = "High risk" if cate >= high else "Medium" if cate >= low else "Low risk"
     return f'<span style="font-family: \'Inter\', sans-serif; font-size: 10px; font-weight: 500; border-radius: 20px; padding: 2px 8px; border: 1px solid {color}44; background-color: {color}22; color: {color};">{text}</span>'

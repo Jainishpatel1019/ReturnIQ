@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import numpy as np
 import sys
 import os
+
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from src.constants import SHAP_DISPLAY_NAMES
@@ -19,8 +20,10 @@ def render(df: pd.DataFrame) -> None:
         X = df[feature_cols].fillna(0).values
         y = df.get("proxy_return_rate", np.zeros(len(df))).values
         df = df.copy()
-        try: df["ols_pred"] = LinearRegression().fit(X,y).predict(X)
-        except: df["ols_pred"] = np.random.rand(len(df))
+        try:
+            df["ols_pred"] = LinearRegression().fit(X, y).predict(X)
+        except Exception:
+            df["ols_pred"] = np.random.rand(len(df))
 
     c1, c2 = st.columns(2)
     c1.markdown('<div style="background-color: #161b22; border-left: 3px solid #d29922; border-radius: 8px; padding: 1rem;"><div style="font-weight: 600; font-family: \'Inter\', sans-serif; font-size: 15px; color: #e6edf3; margin-bottom: 8px;">Simple prediction (OLS)</div><div style="font-family: \'Inter\', sans-serif; font-size: 13px; color: #c9d1d9;">A standard prediction model looks at correlations. It gets confused by confounders — for example, if a seller primarily sells high-return items like clothing, the model might penalize them unfairly simply due to the product category.</div></div>', unsafe_allow_html=True)
@@ -48,31 +51,35 @@ def render(df: pd.DataFrame) -> None:
 
     st.markdown(section_header("Does targeting by our model actually work?", "Higher = our ranking finds bad sellers faster than chance"), unsafe_allow_html=True)
     def auc(df_in, scol, ocol):
-        if scol not in df_in.columns or ocol not in df_in.columns: return np.array([0]), np.array([0])
+        if scol not in df_in.columns or ocol not in df_in.columns:
+            return np.array([0]), np.array([0])
         ds = df_in.sort_values(scol, ascending=False).reset_index(drop=True)
         n = max(1, len(ds))
-        cm = np.cumsum(ds[ocol]) / n
-        bs = np.linspace(0, ds[ocol].mean(), n)
-        return np.arange(n) / n * 100, (cm - bs)
+        cum_outcome = np.cumsum(ds[ocol]) / n
+        random_baseline = np.linspace(0, ds[ocol].mean(), n)
+        return np.arange(n) / n * 100, (cum_outcome - random_baseline)
 
     x_c, y_c = auc(df, "cate", "proxy_return_rate")
     x_o, y_o = auc(df, "ols_pred", "proxy_return_rate")
     
     fig3 = go.Figure()
     fig3.add_trace(go.Scatter(x=x_c, y=y_c, name="Causal model", line=dict(color="#5b8fff", width=3)))
-    if len(x_o)>1: fig3.add_trace(go.Scatter(x=x_o, y=y_o, name="OLS prediction", line=dict(color="#d29922", width=2, dash="dash")))
+    if len(x_o) > 1:
+        fig3.add_trace(go.Scatter(x=x_o, y=y_o, name="OLS prediction", line=dict(color="#d29922", width=2, dash="dash")))
     fig3.add_hline(y=0, line_color="#8b949e", line_dash="dot", annotation_text="Random guessing")
     
-    if len(x_c)>1:
-        try: fig3.add_annotation(x=15, y=float(np.interp(15, x_c, y_c)), text="At 15% effort → our model<br>catches this many returns", showarrow=True, arrowhead=2, font=dict(size=10, color="#5b8fff"))
-        except: pass
+    if len(x_c) > 1:
+        try:
+            fig3.add_annotation(x=15, y=float(np.interp(15, x_c, y_c)), text="At 15% effort → our model<br>catches this many returns", showarrow=True, arrowhead=2, font=dict(size=10, color="#5b8fff"))
+        except Exception:
+            pass
             
     fig3.update_layout(xaxis_title="% of all sellers acted on", yaxis_title="Returns caught vs random targeting")
     fig3, cfg3 = apply_chart_theme(fig3)
     st.plotly_chart(fig3, config=cfg3, use_container_width=True)
     
-    if len(x_c)>1:
-        av = np.trapz(y_c, x_c/100)
+    if len(x_c) > 1:
+        av = np.trapz(y_c, x_c / 100)
         st.markdown(f"<div style='font-family: \"Inter\", sans-serif; font-size: 14px; font-weight: 500; color: #f0f6fc;'>Model AUUC: {av:.3f} vs 0.500 random — {max(0, av/0.5):.1f}x better than chance</div>", unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
@@ -81,23 +88,25 @@ def render(df: pd.DataFrame) -> None:
     fcols = [c for c in df.columns if c not in ["seller_id","cate","cate_lo","cate_hi","proxy_return_rate","ols_pred","narrative","category","display_name","Flag","Status"] and not str(c).startswith("shap_")]
     if fcols and "cate" in df.columns:
         ht = df[df["cate"] >= df["cate"].median()]
-        lt  = df[df["cate"] <  df["cate"].median()]
+        lt = df[df["cate"] < df["cate"].median()]
         smds = {}
         for c in fcols:
             if pd.api.types.is_numeric_dtype(df[c]):
                 p = df[c].std()
-                if p>0: smds[c] = abs(ht[c].mean() - lt[c].mean()) / p
+                if p > 0:
+                    smds[c] = abs(ht[c].mean() - lt[c].mean()) / p
         if smds:
             s_df = pd.Series(smds).sort_values()
             s_df.index = [SHAP_DISPLAY_NAMES.get(i, i.replace("_"," ").title()) for i in s_df.index]
-            cls = ["#3fb950" if v<0.1 else "#d29922" if v<0.2 else "#f85149" for v in s_df.values]
+            cls = ["#3fb950" if v < 0.1 else "#d29922" if v < 0.2 else "#f85149" for v in s_df.values]
             fs = go.Figure(go.Bar(x=s_df.values, y=s_df.index, orientation='h', marker_color=cls))
             fs.add_vline(x=0.1, line_dash="dash", line_color="#8b949e", annotation_text="Balance threshold")
             fs.update_layout(xaxis_title="Standardized Mean Difference", yaxis_title="")
             fs, cfgs = apply_chart_theme(fs)
             st.plotly_chart(fs, config=cfgs, use_container_width=True)
-            st.caption(f"{sum(1 for v in smds.values() if v<0.1)}/{len(smds)} features pass the balance check (SMD < 0.1).")
-    else: st.info("Insufficient feature data.")
+            st.caption(f"{sum(1 for v in smds.values() if v < 0.1)}/{len(smds)} features pass the balance check (SMD < 0.1).")
+    else:
+        st.info("Insufficient feature data.")
 
     st.markdown("<br>", unsafe_allow_html=True)
     with st.expander("🧪 MLflow Experiment Registry"):

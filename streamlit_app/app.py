@@ -25,7 +25,8 @@ def load_data() -> pd.DataFrame:
         os.path.join(base_dir, "streamlit_app/data/dashboard_sample.parquet")
     ]
     for p in candidates:
-        if pathlib.Path(p).exists(): return pd.read_parquet(p)
+        if pathlib.Path(p).exists():
+            return pd.read_parquet(p)
     return pd.DataFrame()
 
 with st.spinner("Loading seller data..."):
@@ -50,12 +51,12 @@ st.sidebar.caption("Model confidence: high")
 
 if selected_view == 'Overview':
     st.markdown(page_header("Seller Return Rate Intelligence", "Causal analysis of what drives returns — not just who has them", status="Live · 1,000 sellers", ok=True), unsafe_allow_html=True)
-    if "cate" in df.columns:
+    if not df.empty and "cate" in df.columns:
         col1, col2, col3, col4 = st.columns(4)
         avg_rate = df["proxy_return_rate"].mean() if "proxy_return_rate" in df.columns else 0
         catemax = df["cate"].max()
         t15 = int(len(df) * 0.15)
-        top15pct = (df.sort_values("cate", ascending=False).head(t15)["proxy_return_rate"].sum() / df["proxy_return_rate"].sum() * 100) if "proxy_return_rate" in df.columns and df["proxy_return_rate"].sum()>0 else 0
+        top15pct = (df.sort_values("cate", ascending=False).head(t15)["proxy_return_rate"].sum() / df["proxy_return_rate"].sum() * 100) if "proxy_return_rate" in df.columns and df["proxy_return_rate"].sum() > 0 else 0
         
         col1.markdown(metric_card("Total sellers", f"{len(df):,}"), unsafe_allow_html=True)
         col2.markdown(metric_card("Avg return rate", f"{avg_rate:.1%}"), unsafe_allow_html=True)

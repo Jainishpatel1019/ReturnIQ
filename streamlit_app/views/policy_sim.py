@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import sys
 import os
+
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from src.ui_helpers import metric_card, section_header, apply_chart_theme, page_header
@@ -12,12 +13,13 @@ from src.ui_helpers import metric_card, section_header, apply_chart_theme, page_
 def render(df: pd.DataFrame) -> None:
     st.markdown(page_header("Policy simulator", "Drag the slider — see what gets prevented vs who gets caught", status="Interactive", ok=True), unsafe_allow_html=True)
 
-    if "cate" not in df.columns: return
+    if "cate" not in df.columns:
+        return
 
     threshold = st.slider("Quality threshold — targeting bottom X% of sellers", float(df["cate"].min()), float(df["cate"].max()), float(df["cate"].quantile(0.85)), 0.001)
     
     flagged = df[df["cate"] >= threshold]
-    pct_flagged = len(flagged)/len(df)*100
+    pct_flagged = len(flagged) / len(df) * 100
     st.caption(f"At this threshold, you're targeting the **bottom {pct_flagged:.0f}%** of sellers by causal impact score.")
 
     tot_ret = df["proxy_return_rate"].sum() if "proxy_return_rate" in df.columns else 1
@@ -30,10 +32,14 @@ def render(df: pd.DataFrame) -> None:
 
     r1c1, r1c2 = st.columns(2)
     r2c1, r2c2 = st.columns(2)
-    with r1c1: st.markdown(metric_card("Sellers flagged", f"{len(flagged):,}", f"Bottom {pct_flagged:.0f}% by risk", "#f85149"), unsafe_allow_html=True)
-    with r1c2: st.markdown(metric_card("Returns preventable", f"{pct_prev:.1f}%", f"≈ {events:,} return events", "#3fb950"), unsafe_allow_html=True)
-    with r2c1: st.markdown(metric_card("Low-risk sellers caught", f"{fpr:.1f}%", "May not need intervention", "#d29922"), unsafe_allow_html=True)
-    with r2c2: st.markdown(metric_card("Current threshold", f"Top {100-pct_flagged:.0f}% flagged", f"CATE > {threshold:.3f}", "#5b8fff"), unsafe_allow_html=True)
+    with r1c1:
+        st.markdown(metric_card("Sellers flagged", f"{len(flagged):,}", f"Bottom {pct_flagged:.0f}% by risk", "#f85149"), unsafe_allow_html=True)
+    with r1c2:
+        st.markdown(metric_card("Returns preventable", f"{pct_prev:.1f}%", f"≈ {events:,} return events", "#3fb950"), unsafe_allow_html=True)
+    with r2c1:
+        st.markdown(metric_card("Low-risk sellers caught", f"{fpr:.1f}%", "May not need intervention", "#d29922"), unsafe_allow_html=True)
+    with r2c2:
+        st.markdown(metric_card("Current threshold", f"Top {100-pct_flagged:.0f}% flagged", f"CATE > {threshold:.3f}", "#5b8fff"), unsafe_allow_html=True)
 
     st.divider()
 
