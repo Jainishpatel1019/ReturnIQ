@@ -9,7 +9,6 @@ Prereq: cohort_stats table must exist in DuckDB
 """
 
 import duckdb
-import pandas as pd
 import mlflow
 from statsmodels.formula.api import ols
 from statsmodels.stats.anova import anova_lm
@@ -31,7 +30,7 @@ def run_variance_decomp(db_path: str = DB_PATH) -> dict:
     # If >100k sellers, subsample to 50k for the ANOVA.
     if len(df) > 5000:
         df_sample = df.sample(5000, random_state=42)
-        print(f"  ⚠  Subsampled to 5k sellers for ANOVA to avoid OOM.")
+        print("  ⚠  Subsampled to 5k sellers for ANOVA to avoid OOM.")
     else:
         df_sample = df
 

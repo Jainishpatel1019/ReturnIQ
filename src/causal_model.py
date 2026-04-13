@@ -12,7 +12,6 @@ Prereq: data/processed/seller_features_trimmed.parquet
 
 import pandas as pd
 import numpy as np
-import shap
 import joblib
 import mlflow
 from econml.dml import CausalForestDML

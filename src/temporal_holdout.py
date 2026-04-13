@@ -7,10 +7,7 @@ and checks for CATE stability (no significant drift).
 
 import pandas as pd
 import numpy as np
-import pathlib
-import json
 import glob
-from xgboost import XGBRegressor
 
 TRAINED_CATE_PATH = "data/processed/cate_results.parquet"
 HOLD_DIR = "data/raw/rainforest/**/*.json"

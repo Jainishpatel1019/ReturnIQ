@@ -9,7 +9,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from src.constants import SHAP_DISPLAY_NAMES
-from src.ui_helpers import metric_card, section_header, apply_chart_theme, risk_badge, page_header
+from src.ui_helpers import metric_card, section_header, apply_chart_theme, page_header
 
 def render(df: pd.DataFrame) -> None:
     st.markdown(page_header("Seller profile", "Individual risk breakdown", status="Causal model", ok=True), unsafe_allow_html=True)

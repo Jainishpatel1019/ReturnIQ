@@ -46,7 +46,6 @@ def main():
         ax.set_ylabel("Count")
 
         # Detect clustering (positivity violation)
-        median = g["seller_quality_score"].median()
         q10 = g["seller_quality_score"].quantile(0.10)
         q90 = g["seller_quality_score"].quantile(0.90)
         ax.axvline(q10, color="red", linestyle="--", alpha=0.5, label="p10/p90")
@@ -55,7 +54,7 @@ def main():
         if q90 - q10 < 0.1:
             ax.set_title(f"⚠ {cat[:15]} — LOW VARIANCE", color="red", fontsize=9)
             print(f"  ⚠ WARNING: {cat} — treatment has very low variance (q90-q10={q90-q10:.3f}).")
-            print(f"             Consider EXCLUDING this category from causal estimation.")
+            print("             Consider EXCLUDING this category from causal estimation.")
 
     plt.tight_layout()
     plt.savefig(PLOT_PATH, dpi=150)

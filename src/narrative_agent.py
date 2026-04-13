@@ -10,7 +10,6 @@ Run: python src/narrative_agent.py  (tests with a single seller)
 
 import requests
 import pandas as pd
-import numpy as np
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 

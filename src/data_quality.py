@@ -8,7 +8,6 @@ Prereq: data/processed/returns.duckdb must exist
 """
 
 import duckdb
-import pandas as pd
 import great_expectations as ge
 
 DB_PATH = "data/processed/returns.duckdb"

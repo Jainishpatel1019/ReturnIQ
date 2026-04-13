@@ -9,8 +9,6 @@ Prereq: cohort_stats table must exist in DuckDB
 """
 
 import duckdb
-import numpy as np
-import pandas as pd
 from statsmodels.regression.linear_model import OLS
 from statsmodels.stats.diagnostic import het_breuschpagan
 from statsmodels.tools import add_constant

@@ -7,7 +7,6 @@ Target: delta > 1.0 (means unobserved bias must be stronger than all data we HAV
 """
 
 import pandas as pd
-import numpy as np
 import pathlib
 
 INPUT_PATH = "data/processed/cate_results.parquet"
@@ -27,7 +26,6 @@ def run_sensitivity():
     # Delta-sensitivity approximation
     # If delta = 1.0, unobserved selection is as strong as observed selection
     # We use the R2 from the OLS baseline (approx 40%) as the observed selection power
-    observed_r2 = 0.3999 
     
     # Calculate "Robustness Value" (RV)
     # A high RV means the result is very robust to omitted variable bias

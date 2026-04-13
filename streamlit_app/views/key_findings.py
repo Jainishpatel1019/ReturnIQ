@@ -1,13 +1,10 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-import plotly.express as px
-import plotly.graph_objects as go
 import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-from src.ui_helpers import section_header, apply_chart_theme, page_header, metric_card
+from src.ui_helpers import page_header, metric_card
 
 
 def _finding_number(n, color="#5b8fff"):
@@ -22,10 +19,6 @@ def render(df: pd.DataFrame) -> None:
         return
 
     # Pre-compute real numbers from data
-    avg_rate = df["proxy_return_rate"].mean() if "proxy_return_rate" in df.columns else 0
-    cate_max = df["cate"].max()
-    q85 = df["cate"].quantile(0.85)
-    q50 = df["cate"].quantile(0.50)
     t15 = int(len(df) * 0.15)
     top15 = df.sort_values("cate", ascending=False).head(t15)
     tot_ret = df["proxy_return_rate"].sum() if "proxy_return_rate" in df.columns else 1

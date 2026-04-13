@@ -6,9 +6,7 @@ successfully reduced return rates for the treated group.
 Uses PanelOLS with Entity and Time Fixed Effects.
 """
 
-import duckdb
 import pandas as pd
-import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -61,7 +59,7 @@ def run_did():
     print("────────────────────────────────────────────────────────")
     
     if res.pvalues['treat_post'] < 0.05:
-        print(f"  ✓ SUCCESS — Policy interaction is significant (p < 0.05).")
+        print("  ✓ SUCCESS — Policy interaction is significant (p < 0.05).")
         print(f"    Sellers in the treatment group saw a {abs(res.params['treat_post']*100):.1f}% drop in returns.")
     
     # ── Quick visualization ────────────────────────────────────────────────────
