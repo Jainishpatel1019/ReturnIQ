@@ -9,24 +9,29 @@
 
 ReturnIQ is a causal inference platform designed to solve the **Selection vs. Treatment** dilemma in e-commerce. It answers a critical question: *Does a seller have high returns because they are a "bad" seller, or because they sell high-risk products?*
 
-![ReturnIQ Dashboard Overview](docs/images/hero_dashboard.png)
+---
+
+## 🖼️ Interface Gallery
+
+| 📊 Overview & Metrics | 💡 Causal Key Findings |
+|:---:|:---:|
+| ![Overview](docs/images/01_overview.png) | ![Key Findings](docs/images/02_key_findings.png) |
+| *High-level platform telemetry* | *Quantifying seller vs. market impact* |
+
+| 👤 Seller Deep-Dive | ⚙️ Policy Simulator |
+|:---:|:---:|
+| ![Seller Profile](docs/images/03_seller_profile.png) | ![Policy Tradeoff](docs/images/04_policy_sim.png) |
+| *Individual risk narratives* | *Prevention vs. Precision tradeoff* |
+
+| 📉 Model Identification |
+|:---:|
+| ![Model Proof](docs/images/05_model_proof.png) |
+| *OLS vs. Causal model disagreement* |
+
+---
 
 ## 🎯 The Core Problem: Selection Bias
-In marketplace analytics, standard OLS regression "sees" a high return rate and blames the seller. However, if a seller moves high-return items (e.g., Clothing vs. Home Goods), simple correlation fails. 
-
-**ReturnIQ uses Double Machine Learning (DML)** to isolate the true **Conditional Average Treatment Effect (CATE)** of seller operations, independent of market confounding variables.
-
----
-
-## 📈 Key Findings
-| Metric | Result | Why it matters |
-|---------|--------|----------------|
-| **Causal Variance (η²)** | **41%** | Seller behavior explains 2x more return variance than product category. |
-| **Model AUUC** | **0.71** | Outperforms random targeting (0.50) and OLS baseline by significant margins. |
-| **OLS Error Rate** | **21%** | Standard prediction assigned 1 in 5 sellers to the wrong risk tier. |
-| **Temporal Drift** | **<3 pts** | Causal patterns held stable from 2023 training data to 2025 live API pulses. |
-
----
+In marketplace analytics, standard metrics "see" a high return rate and blame the seller. However, if a seller moves high-return items (e.g., Clothing), simple correlation fails. **ReturnIQ uses Double Machine Learning (DML)** to isolate the true **Conditional Average Treatment Effect (CATE)** of seller operations.
 
 ## 🏗️ Technical Architecture
 
@@ -47,30 +52,17 @@ graph TD
 
 ## 🚀 Quick Start
 
-### 1. Prerequisites
-- Python 3.11+
-- Conda (recommended)
-- [Ollama](https://ollama.ai/) (optional, for LLM narratives)
-
-### 2. Setup
+### 1. Setup
 ```bash
-# Clone the repo
 git clone https://github.com/Jainishpatel1019/ReturnIQ
 cd ReturnIQ
-
-# Create environment
 conda create -n returns python=3.11
 conda activate returns
-
-# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 3. Usage
+### 2. Usage
 ```bash
-# Initialize local database and run pipeline (Optional - requires datasets)
-make all
-
 # Launch the dashboard
 streamlit run streamlit_app/app.py
 ```
@@ -83,25 +75,19 @@ streamlit run streamlit_app/app.py
 We implement the `CausalForestDML` estimator from **EconML**. This allows us to handle high-dimensional confounders (X) while focusing on the non-linear treatment effect (T) of seller operational quality.
 
 ### 2. Listing Accuracy (NLP)
-Using a cross-encoder approach with `DistilBERT`, we measure the semantic gap between "How the seller describes the item" vs "How the buyer experienced it." This delta is a massive causal driver (SHAP = 0.21).
+Using `DistilBERT`, we measure the semantic gap between "How the seller describes the item" vs "How the buyer experienced it." This delta is a massive causal driver (SHAP = 0.21).
 
 ### 3. Proof of Validity
-- **Placebo Tests**: Swapping the treatment with random noise yielded $p \approx 0.43$, confirming the model isn't picking up artifacts.
-- **Positivity Checks**: We trimmed the data to ensure overlap in exposure probabilities across all categories.
-- **AUUC Curve**: Benchmarked against a temporal holdout set to ensure real-world generalizability.
+- **Placebo Tests**: Treatment shuffle yield $p \approx 0.43$, confirming the model isn't picking up artifacts.
+- **AUUC Curve**: Benchmarked against a temporal holdout set (2025) to ensure generalizability.
 
 ---
 
 ## 🛠️ Tooling & Stack
-- **Core Engine**: `DuckDB` (Fast OLAP), `Pandas`, `NumPy`
-- **Causal Inference**: `EconML`, `XGBoost`, `Scikit-learn`
-- **LLM/NLP**: `DistilBERT`, `Mistral-7B`, `Ollama`
-- **Frontend**: `Streamlit`, `Plotly`, `Streamlit-Antd-Components`
-- **Ops**: `MLflow` (tracking), `HuggingFace Spaces` (deployment), `GitHub Actions` (CI)
+`Python` `DuckDB` `EconML` `XGBoost` `DistilBERT` `Mistral-7B` `Streamlit` `MLflow` `Plotly`
 
 ---
 
 ## 👤 Author
 **Jainish Patel**  
-[GitHub](https://github.com/Jainishpatel1019)  
-[HuggingFace](https://huggingface.co/Jainishp1019)
+[GitHub](https://github.com/Jainishpatel1019)  ·  [HuggingFace](https://huggingface.co/Jainishp1019)
