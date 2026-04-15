@@ -1,0 +1,39 @@
+name: Deploy to HuggingFace Spaces
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Push deploy/ folder to HuggingFace Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git config --global user.email "jainishpatel153@gmail.com"
+          git config --global user.name "Jainish Patel"
+
+          # Clone the existing HF Space
+          git clone https://Jainishp1019:${HF_TOKEN}@huggingface.co/spaces/Jainishp1019/seller-intelligence-platform hf_space
+
+          # Sync deploy/ contents into the Space (preserve HF README metadata)
+          rsync -av --delete \
+            --exclude='.git' \
+            --exclude='README.md' \
+            deploy/ hf_space/
+
+          cd hf_space
+
+          git add -A
+          # Only commit if there are changes
+          git diff --cached --quiet && echo "No changes to deploy." || \
+            (git commit -m "Deploy: sync from GitHub main [$(date +'%Y-%m-%d %H:%M')]" && git push)
