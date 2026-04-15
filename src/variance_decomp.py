@@ -41,16 +41,16 @@ def run_variance_decomp(db_path: str = DB_PATH) -> dict:
     ss_seller   = anova_table.loc["Residual",      "sum_sq"]
     ss_total    = anova_table["sum_sq"].sum()
 
-    eta2_seller   = float(ss_seller   / ss_total)
+    eta2_residual = float(ss_seller   / ss_total)
     eta2_category = float(ss_category / ss_total)
 
     print("\n── Variance Decomposition ──────────────────────────────")
-    print(f"  eta² seller   = {eta2_seller:.3f}  ({eta2_seller*100:.1f}% of variance)")
-    print(f"  eta² category = {eta2_category:.3f}  ({eta2_category*100:.1f}% of variance)")
+    print(f"  eta² (Seller + Noise) = {eta2_residual:.3f}  ({eta2_residual*100:.1f}% of variance)")
+    print(f"  eta² category        = {eta2_category:.3f}  ({eta2_category*100:.1f}% of variance)")
     print("────────────────────────────────────────────────────────")
 
-    if eta2_seller > 0.3:
-        print("  ✓ eta²_seller > 0.30 — sellers explain >30% of return rate variance.")
+    if eta2_residual > 0.3:
+        print("  ✓ Significant residual variance (>30%) attributed to seller-level heterogeneity.")
         print("    This JUSTIFIES building a seller-level causal model.")
     else:
         print("  ⚠  eta²_seller ≤ 0.30 — seller effect is weaker than expected.")
@@ -59,12 +59,12 @@ def run_variance_decomp(db_path: str = DB_PATH) -> dict:
     # ── Log to MLflow ──────────────────────────────────────────────────────────
     mlflow.set_experiment("variance_decomp")
     with mlflow.start_run():
-        mlflow.log_metric("eta2_seller",   eta2_seller)
+        mlflow.log_metric("eta2_residual", eta2_residual)
         mlflow.log_metric("eta2_category", eta2_category)
         mlflow.log_metric("n_sellers",     len(df))
     print("\n✓ Metrics logged to MLflow (run: mlflow ui)")
 
-    return {"eta2_seller": eta2_seller, "eta2_category": eta2_category}
+    return {"eta2_residual": eta2_residual, "eta2_category": eta2_category}
 
 
 if __name__ == "__main__":
