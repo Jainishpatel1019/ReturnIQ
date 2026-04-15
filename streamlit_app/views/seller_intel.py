@@ -1,8 +1,6 @@
 import streamlit as st
-import numpy as np
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import sys
 import os
 
@@ -60,9 +58,9 @@ def render(df: pd.DataFrame) -> None:
 
     m1, m2, m3, m4 = st.columns(4)
     with m1:
-        st.markdown(metric_card("Return Impact (CATE)", f"{c_val:+.2%}", sub="Direct causal effect", delta="+2.1%"), unsafe_allow_html=True)
+        st.markdown(metric_card("Return Impact (CATE)", f"{c_val:+.2%}", sub="Direct causal effect"), unsafe_allow_html=True)
     with m2:
-        st.markdown(metric_card("Proxy Return Rate", f"{row.get('proxy_return_rate',0):.1%}", sub="Observed 1-2 star reviews"), unsafe_allow_html=True)
+        st.markdown(metric_card("Proxy Return Rate", f"{row.get('proxy_return_rate',0):.1%}", sub="Observed metrics"), unsafe_allow_html=True)
     with m3:
         st.markdown(metric_card("Quality Score", f"{row.get('seller_quality_score',0)*100:.0f}/100", sub="Composite index"), unsafe_allow_html=True)
     with m4:
@@ -87,28 +85,24 @@ def render(df: pd.DataFrame) -> None:
     with r_col:
         chart_card("Causal Logic Narrative", "AI-generated risk synthesis")
         narr_text = row.get("narrative", "")
-        # Robust fallback for narrative
         if pd.isna(narr_text) or len(str(narr_text).strip()) < 10:
-             narr_text = f"This seller has a causal return impact of {c_val:+.2%}. Their operational profile suggests that their return rate is {'higher than expected' if c_val > 0 else 'lower than expected'} given their product category. For a detailed breakdown, please ensure the narrative precomputation pipeline has been fully executed."
+             narr_text = f"This seller has a causal return impact of {c_val:+.2%}. Their operational profile suggests that their return rate is {'higher than expected' if c_val > 0 else 'lower than expected'} given their product category."
         st.markdown(f'<div class="glass-card" style="font-size: 14px; color: #f0f6fc; line-height: 1.6;">{narr_text}</div>', unsafe_allow_html=True)
 
-    # --- MARKET COMPARISON / HEATMAP SECTION ---
-    st.markdown(section_header("Market Comparison", "How this seller context compares to the marketplace"), unsafe_allow_html=True)
+    # --- MARKET COMPARISON ---
+    st.markdown(section_header("Market Comparison", "Ranking vs peers"), unsafe_allow_html=True)
     
     if category == "All":
-        # Multi-category heatmap
         sample_df = df.sample(min(100, len(df)))
-        st.markdown('<div class="chart-card"><div style="font-size: 13px; color: #8b949e; margin-bottom: 10px;">Causal Impact by Seller & Category (Top Sellers)</div>', unsafe_allow_html=True)
+        st.markdown('<div class="chart-card"><div style="font-size: 13px; color: #8b949e; margin-bottom: 10px;">Causal Impact by Seller & Category</div>', unsafe_allow_html=True)
         heat_data = sample_df.pivot_table(index='seller_id', columns='category', values='cate')
         fig_heat = px.imshow(heat_data, color_continuous_scale='Viridis', aspect='auto')
         fig_heat, cfg_heat = apply_chart_theme(fig_heat, height=400)
         st.plotly_chart(fig_heat, config=cfg_heat, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
     else:
-        # Single category bar comparison
         st.markdown(f'<div class="chart-card"><div style="font-size: 13px; color: #8b949e; margin-bottom: 10px;">Impact Ranking: {category} (Top 15 Sellers)</div>', unsafe_allow_html=True)
         top_15 = df[df["category"] == category].sort_values("cate", ascending=False).head(15)
-        # Highlight our selected seller if they are in the top 15
         top_15["color"] = ["#39C5BB" if sid == row["seller_id"] else "#58a6ff" for sid in top_15["seller_id"]]
         fig_comp = px.bar(top_15, x="seller_id", y="cate", color="color", color_discrete_map="identity")
         fig_comp.update_layout(showlegend=False)
@@ -116,11 +110,15 @@ def render(df: pd.DataFrame) -> None:
         st.plotly_chart(fig_comp, config=cfg_comp, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown(section_header("Temporal Drift & Stability", "Vulnerability patterns (Historical Baseline)"), unsafe_allow_html=True)
-    drift_df = pd.DataFrame({
-        "Month": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-        "Impact": [c_val * (1 + (np.sin(i/2) * 0.1) + (np.random.normal(0, 0.05))) for i in range(12)]
-    })
-    drift_fig = px.line(drift_df, x="Month", y="Impact", markers=True, color_discrete_sequence=["#3fb950"])
-    drift_fig, drift_cfg = apply_chart_theme(drift_fig, height=250, show_grid=False)
-    st.plotly_chart(drift_fig, config=drift_cfg, use_container_width=True)
+    # REPLACING RANDOM DRIFT WITH ACTUAL STATISTICAL STABILITY
+    st.markdown(section_header("Operational Stability Analysis", "Behavioral anchoring vs noise"), unsafe_allow_html=True)
+    
+    # Calculate a real stability index for this seller: 1 - relative error
+    stability_idx = 1 - abs(row["cate_hi"] - row["cate_lo"]) / abs(row["cate"]) if row["cate"] != 0 else 0
+    stability_idx = min(max(stability_idx, 0.1), 0.95)
+    
+    st.markdown(f'<div class="glass-card" style="text-align: center;">'
+                f'<div style="color: #8b949e; font-size: 13px;">Confidence Stability Index</div>'
+                f'<div style="color: #3fb950; font-size: 32px; font-weight: 700;">{stability_idx:.2f}</div>'
+                f'<div style="color: #8b949e; font-size: 12px;">Based on 200-iteration bootstrap variance</div>'
+                f'</div>', unsafe_allow_html=True)

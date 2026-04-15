@@ -18,7 +18,7 @@ from src.ui_helpers import (
 
 # Page Config
 st.set_page_config(
-    page_title="ReturnIQ Dashboard", 
+    page_title="ReturnIQ | Causal Marketplace Intelligence", 
     page_icon="💠", 
     layout="wide", 
     initial_sidebar_state="expanded"
@@ -70,8 +70,8 @@ with st.sidebar:
     ], size='sm', color='#58a6ff', open_all=False)
     
     st.sidebar.markdown("---")
-    st.sidebar.caption("v2.4.0 · High Fidelity")
-    st.sidebar.caption("Engine: CausalForestDML")
+    st.sidebar.caption("v2.4.0 · Production Ready")
+    st.sidebar.caption("Engine: CausalForestDML (EconML)")
 
 # --- GLOBAL FILTERS (Stateful) ---
 if 'selected_sector' not in st.session_state:
@@ -94,23 +94,23 @@ if selected_view == 'Dashboard':
         sel_sector = st.selectbox("Market Sector", sectors, index=sectors.index(st.session_state.selected_sector) if st.session_state.selected_sector in sectors else 0, label_visibility="collapsed")
         st.session_state.selected_sector = sel_sector
     with f3:
-        st.selectbox("Timeframe", ["Last 12 Months", "Last 6 Months", "Last 30 Days"], label_visibility="collapsed")
+        st.selectbox("Timeframe", ["Full History [Finalized]"], label_visibility="collapsed")
     
     # Apply Filtering
     df = df_raw.copy()
     if st.session_state.selected_sector != "All Sectors":
         df = df[df["category"] == st.session_state.selected_sector]
-    if st.session_state.selected_seller != "All Sellers":
-        # If a specific seller is selected, we show their category context but maybe highlight them? 
-        # For now, let's keep the dashboard aggregate but show a seller-specific card if one is picked.
-        pass
 
     st.markdown("<br>", unsafe_allow_html=True)
     
+    # Global Stats for deltas
+    global_avg = df_raw["proxy_return_rate"].mean()
+    global_catemax = df_raw["cate"].max()
+
     # Top Row
     c1, c2 = st.columns([1, 1])
     with c1:
-        st.markdown('<div style="color: #f0f6fc; font-size: 14px; font-weight: 600; margin-bottom: 20px;">Data Visuatics</div>', unsafe_allow_html=True)
+        st.markdown('<div style="color: #f0f6fc; font-size: 14px; font-weight: 600; margin-bottom: 20px;">Return Intensity Profile</div>', unsafe_allow_html=True)
         inner_l, inner_r = st.columns([1.5, 1])
         with inner_l:
             donut_fig = create_donut_chart(df)
@@ -120,31 +120,42 @@ if selected_view == 'Dashboard':
             st.markdown("<br>", unsafe_allow_html=True)
             avg_rate = df["proxy_return_rate"].mean() if not df.empty else 0
             catemax = df["cate"].max() if not df.empty else 0
-            st.markdown(f'<div style="font-size: 13px; color: #8b949e; line-height: 2.2;"><span style="color: #58a6ff;">●</span> Total Sellers: <span style="color: #f0f6fc; float: right;">{len(df):,}</span><br><span style="color: #39C5BB;">●</span> Avg Return Rate: <span style="color: #3fb950; float: right;">{avg_rate:.1%}</span><br><span style="color: #3fb950;">●</span> Highest CATE: <span style="color: #3fb950; float: right;">+{catemax:.1%}</span></div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="font-size: 13px; color: #8b949e; line-height: 2.2;"><span style="color: #58a6ff;">●</span> Total Sellers: <span style="color: #f0f6fc; float: right;">{len(df):,}</span><br><span style="color: #39C5BB;">●</span> Avg Return Rate: <span style="color: #3fb950; float: right;">{avg_rate:.1%}</span><br><span style="color: #3fb950;">●</span> Peaks (CATE): <span style="color: #3fb950; float: right;">{catemax:+.1%}</span></div>', unsafe_allow_html=True)
     
     with c2:
-        st.markdown('<div style="color: #f0f6fc; font-size: 14px; font-weight: 600; margin-bottom: 20px;">Avg Return Rate Trend</div>', unsafe_allow_html=True)
-        # Simulate trend based on filtered mean
-        trend = [avg_rate * (1 + 0.1 * np.random.randn()) for _ in range(10)]
-        fig_line = go.Figure(go.Scatter(y=trend, mode='lines+markers', line=dict(color='#58a6ff', width=3)))
-        fig_line, cfg = apply_chart_theme(fig_line, height=220, show_grid=False)
-        st.plotly_chart(fig_line, use_container_width=True, config=cfg)
+        st.markdown('<div style="color: #f0f6fc; font-size: 14px; font-weight: 600; margin-bottom: 20px;">Risk Density (CATE Distribution)</div>', unsafe_allow_html=True)
+        # Replacing random trend with actual data distribution
+        hist_data = df["cate"].sample(min(2000, len(df))) if not df.empty else [0]
+        counts, bins = np.histogram(hist_data, bins=20)
+        bin_centers = 0.5 * (bins[1:] + bins[:-1])
+        fig_dist = go.Figure(go.Scatter(x=bin_centers, y=counts, fill='tozeroy', line=dict(color='#58a6ff', width=3)))
+        fig_dist.update_layout(xaxis_title="Causal Impact Score", yaxis_title="Seller Frequency")
+        fig_dist, cfg = apply_chart_theme(fig_dist, height=220, show_grid=False)
+        st.plotly_chart(fig_dist, use_container_width=True, config=cfg)
 
     # Metrics Row
     m1, m2, m3, m4 = st.columns(4)
     with m1:
-        st.markdown(metric_card("Total Sellers", f"{len(df):,}", sub="Filtered marketplace"), unsafe_allow_html=True)
+        st.markdown(metric_card("Total Sellers", f"{len(df):,}", sub="Segment scale"), unsafe_allow_html=True)
     with m2:
-        st.markdown(metric_card("Avg Return Rate", f"{avg_rate:.1%}", delta=f"{'+' if np.random.rand()>0.5 else '-'}{np.random.rand()*3:.1%}"), unsafe_allow_html=True)
+        # Calculate real delta vs global avg
+        delta_val = (avg_rate - global_avg) / global_avg if global_avg > 0 else 0
+        st.markdown(metric_card("Avg Return Rate", f"{avg_rate:.1%}", delta=f"{delta_val:+.1%}", sub="Vs market global"), unsafe_allow_html=True)
     with m3:
-        st.markdown(metric_card("Highest CATE", f"+{catemax:.1%}", delta=f"+{np.random.rand()*10:.1%}"), unsafe_allow_html=True)
+        # Calculate real delta vs global cate max
+        cmax_delta = (catemax - global_catemax) / abs(global_catemax) if global_catemax != 0 else 0
+        st.markdown(metric_card("Max Operational Impact", f"{catemax:+.1%}", delta=f"{cmax_delta:+.1%}", sub="Top causal driver"), unsafe_allow_html=True)
     
     # Calculate returns preventable for filtered set
     t15 = int(len(df) * 0.15) if len(df) > 0 else 0
     tot_ret = df["proxy_return_rate"].sum() if not df.empty else 1
-    pct_prev = (df.sort_values("cate", ascending=False).head(t15)["proxy_return_rate"].sum() / tot_ret * 100) if tot_ret > 0 else 0
+    # Using real sorted data here
+    top_15_impact = df.sort_values("cate", ascending=False).head(t15)["proxy_return_rate"].sum()
+    pct_prev = (top_15_impact / tot_ret * 100) if tot_ret > 0 else 0
     with m4:
-        st.markdown(metric_card("Returns Impact", f"{pct_prev:.0f}%", sub="Preventable by top 15%"), unsafe_allow_html=True)
+        # Calculate efficiency: How much better than random? (Random would be 15%)
+        efficiency = pct_prev / 15 if pct_prev > 0 else 0
+        st.markdown(metric_card("Prevention Lift", f"{pct_prev:.1f}%", sub=f"{efficiency:.1f}x targeting efficiency"), unsafe_allow_html=True)
 
     if st.session_state.selected_seller != "All Sellers":
         st.markdown("---")
@@ -152,14 +163,11 @@ if selected_view == 'Dashboard':
         s_row = df_raw[df_raw["seller_id"] == st.session_state.selected_seller].iloc[0]
         i1, i2, i3 = st.columns(3)
         with i1:
-            st.markdown(metric_card("Seller CATE", f"{s_row['cate']:+.2%}", sub="Individual causal impact"), unsafe_allow_html=True)
+            st.markdown(metric_card("Seller CATE", f"{s_row['cate']:+.2%}", sub="Direct causal influence"), unsafe_allow_html=True)
         with i2:
             st.write(f"Category: **{s_row['category']}**")
         with i3: 
             if st.button("Go to full profile"): 
-                # Note: sac.menu doesn't easily allow programmatic navigation without complex state, 
-                # but we can instruct user or change a state. 
-                # For simplicity, we'll just show info here.
                 st.info("Switch to 'Sellers' view for full breakdown.")
 
 elif selected_view == 'Key Findings':
@@ -176,7 +184,6 @@ elif selected_view == 'Methodology':
 
 elif selected_view == 'Sellers':
     from views.seller_intel import render as render_sellers
-    # Pass the raw df and the selected seller to the view
     render_sellers(df_raw)
 
 elif selected_view == 'Policy Simulator':
