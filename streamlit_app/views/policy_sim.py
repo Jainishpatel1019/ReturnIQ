@@ -13,20 +13,30 @@ from src.ui_helpers import metric_card, section_header, apply_chart_theme, page_
 def render(df: pd.DataFrame) -> None:
     st.markdown(page_header("Policy Simulator", "Adjust quality thresholds to optimize prevention"), unsafe_allow_html=True)
 
+    if df.empty:
+        st.warning("No data available for the current filters.")
+        return
+
     if "cate" not in df.columns:
         return
 
     # User Control
     with st.container():
         st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        threshold = st.slider("Causal Impact Threshold", float(df["cate"].min()), float(df["cate"].max()), float(df["cate"].quantile(0.85)), 0.001)
+        # Handle cases with no variance
+        min_c = float(df["cate"].min())
+        max_c = float(df["cate"].max())
+        if min_c == max_c:
+            max_c += 0.001
+        
+        threshold = st.slider("Causal Impact Threshold", min_c, max_c, float(df["cate"].quantile(0.85)), 0.001)
         st.markdown('</div>', unsafe_allow_html=True)
     
     flagged = df[df["cate"] >= threshold]
-    pct_flagged = len(flagged) / len(df) * 100
+    pct_flagged = len(flagged) / len(df) * 100 if len(df) > 0 else 0
     
-    tot_ret = df["proxy_return_rate"].sum() if "proxy_return_rate" in df.columns else 1
-    prev_ret = flagged["proxy_return_rate"].sum() if "proxy_return_rate" in flagged.columns else 0
+    tot_ret = df["proxy_return_rate"].sum() if not df.empty else 1
+    prev_ret = flagged["proxy_return_rate"].sum() if not flagged.empty else 0
     pct_prev = (prev_ret / tot_ret * 100) if tot_ret > 0 else 0
     
     med_ret = df.get("proxy_return_rate", pd.Series([0])).median()
@@ -37,7 +47,7 @@ def render(df: pd.DataFrame) -> None:
     with m1:
         st.markdown(metric_card("Sellers Flagged", f"{len(flagged):,}", sub=f"Targeting bottom {pct_flagged:.0f}%", color="#f85149"), unsafe_allow_html=True)
     with m2:
-        st.markdown(metric_card("Returns Preventable", f"{pct_prev:.1f}%", sub="Potential reduction", color="#3fb950"), unsafe_allow_html=True)
+        st.markdown(metric_card("Returns Prevented", f"{pct_prev:.1f}%", sub="Potential reduction", color="#3fb950"), unsafe_allow_html=True)
     with m3:
         st.markdown(metric_card("False Positives", f"{fpr:.1f}%", sub="Good sellers flagged", color="#d29922"), unsafe_allow_html=True)
     with m4:
@@ -57,10 +67,3 @@ def render(df: pd.DataFrame) -> None:
     fig.update_layout(xaxis_title="Low-risk sellers caught (%)", yaxis_title="Returns Prevented (%)")
     fig, cfg = apply_chart_theme(fig, height=350)
     st.plotly_chart(fig, config=cfg, use_container_width=True)
-
-    st.markdown(section_header("Flagging Distribution"), unsafe_allow_html=True)
-    dpp = df.copy()
-    dpp["Status"] = dpp["cate"].apply(lambda x: "Flagged" if x >= threshold else "Safe")
-    fig2 = px.histogram(dpp, x="proxy_return_rate", color="Status", nbins=50, barmode="overlay", opacity=0.7, color_discrete_map={"Flagged": "#f85149", "Safe": "#3fb950"})
-    fig2, cfg2 = apply_chart_theme(fig2, height=300)
-    st.plotly_chart(fig2, config=cfg2, use_container_width=True)

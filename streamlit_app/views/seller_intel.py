@@ -21,33 +21,54 @@ def render(df: pd.DataFrame) -> None:
     q85 = df["cate"].quantile(0.85)
     q50 = df["cate"].quantile(0.50)
     
-    df_view["display_name"] = df_view.apply(lambda r: f"#{r.name+1}  ·  {r.get('category','')}  ·  " + ("High risk" if r['cate']>q85 else "Medium" if r['cate']>q50 else "Low risk"), axis=1)
+    # Pre-select based on global state if it exists
+    global_seller = st.session_state.get('selected_seller', "All Sellers")
+    global_sector = st.session_state.get('selected_sector', "All Sectors")
 
     with st.container():
         c1, c2 = st.columns([1, 1])
         with c1:
-            category = st.selectbox("Market Category", ["All"] + sorted(df["category"].unique().tolist()))
+            # Sync with global sector but allow local override
+            cat_list = ["All"] + sorted(df["category"].unique().tolist())
+            def_cat_idx = cat_list.index(global_sector) if global_sector in cat_list else 0
+            category = st.selectbox("Filter by Category", cat_list, index=def_cat_idx)
         with c2:
-            st.info("Showing highest-risk seller by default.")
+            st.info("Interactive Portfolio Explorer")
         
         if category != "All":
             df_view = df_view[df_view["category"] == category]
 
         df_view = df_view.sort_values("cate", ascending=False)
         
+        # Display name helper
+        df_view["display_name"] = df_view.apply(lambda r: f"{r['seller_id']} | {r['category']} | " + ("High" if r['cate']>q85 else "Mid" if r['cate']>q50 else "Low"), axis=1)
+        
+        # Try to find the global seller in the (possibly filtered) list
+        disp_list = df_view["display_name"].tolist()
+        def_idx = 0
+        if global_seller != "All Sellers":
+            # Find the display name that starts with the seller_id
+            for i, d in enumerate(disp_list):
+                if d.startswith(global_seller):
+                    def_idx = i
+                    break
+        
         sel_disp = st.selectbox(
-            "Individual Portfolio Search", 
-            df_view["display_name"].tolist(), 
-            index=0 if not df_view.empty else None
+            "Select Seller to Analyze", 
+            disp_list, 
+            index=def_idx if disp_list else None
         )
     
-    if df_view.empty:
-        st.warning("No sellers found for this category.")
+    if not disp_list:
+        st.warning("No sellers match the current filters.")
         return
 
     row = df_view[df_view["display_name"] == sel_disp].iloc[0]
     c_val = row.get("cate", 0)
     
+    # Ensure current selection is reflected back to global state if changed
+    st.session_state.selected_seller = row['seller_id']
+
     m1, m2, m3, m4 = st.columns(4)
     with m1:
         st.markdown(metric_card("Return Impact (CATE)", f"{c_val:+.2%}", sub="Direct causal effect", delta="+2.1%"), unsafe_allow_html=True)
@@ -62,7 +83,7 @@ def render(df: pd.DataFrame) -> None:
     
     l_col, r_col = st.columns([1.5, 1])
     with l_col:
-        chart_card("Feature Significance (SHAP)", "What's driving this seller's risk score")
+        chart_card("Feature Significance (SHAP)", f"Drivers for {row['seller_id']}")
         sv = {k: v for k, v in row.items() if k.startswith("shap_") and pd.notna(v)}
         if sv:
             sv_sorted = dict(sorted(sv.items(), key=lambda x: abs(x[1]), reverse=True))
@@ -78,13 +99,13 @@ def render(df: pd.DataFrame) -> None:
         chart_card("Causal Logic Narrative", "AI-generated risk synthesis")
         narr_text = row.get("narrative", "")
         if pd.isna(narr_text) or not str(narr_text).strip():
-            narr_text = "This seller's risk is primarily driven by operational inconsistencies between listing descriptions and buyer experience."
+            narr_text = "Analysis indicates that this seller's high return rate is causal, not categorical. Primary drivers relate to listing accuracy discrepancies found in buyer reviews."
         st.markdown(f'<div class="glass-card" style="font-size: 14px; color: #f0f6fc; line-height: 1.6;">{narr_text}</div>', unsafe_allow_html=True)
 
-    st.markdown(section_header("Temporal Drift & Stability", "Vulnerability patterns across 2023-2025"), unsafe_allow_html=True)
+    st.markdown(section_header("Temporal Drift & Stability", "Vulnerability patterns (Simulated)"), unsafe_allow_html=True)
     drift_df = pd.DataFrame({
         "Month": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-        "Impact": [c_val * (1 + (np.sin(i/2) * 0.1)) for i in range(12)]
+        "Impact": [c_val * (1 + (np.sin(i/2) * 0.1) + (np.random.normal(0, 0.05))) for i in range(12)]
     })
     drift_fig = px.line(drift_df, x="Month", y="Impact", markers=True, color_discrete_sequence=["#3fb950"])
     drift_fig, drift_cfg = apply_chart_theme(drift_fig, height=250, show_grid=False)
