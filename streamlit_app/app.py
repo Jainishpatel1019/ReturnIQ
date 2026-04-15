@@ -4,7 +4,6 @@ import pathlib
 import sys
 import os
 import streamlit_antd_components as sac
-import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
 
@@ -72,11 +71,13 @@ with st.sidebar:
     
     st.sidebar.markdown("---")
     st.sidebar.caption("v2.4.0 · High Fidelity")
-    st.sidebar.caption(f"Engine: CausalForestDML")
+    st.sidebar.caption("Engine: CausalForestDML")
 
 # --- GLOBAL FILTERS (Stateful) ---
-if 'selected_sector' not in st.session_state: st.session_state.selected_sector = "All Sectors"
-if 'selected_seller' not in st.session_state: st.session_state.selected_seller = "All Sellers"
+if 'selected_sector' not in st.session_state:
+    st.session_state.selected_sector = "All Sectors"
+if 'selected_seller' not in st.session_state:
+    st.session_state.selected_seller = "All Sellers"
 
 # --- ROUTING ---
 if selected_view == 'Dashboard':
@@ -113,7 +114,8 @@ if selected_view == 'Dashboard':
         inner_l, inner_r = st.columns([1.5, 1])
         with inner_l:
             donut_fig = create_donut_chart(df)
-            if donut_fig: st.plotly_chart(donut_fig, use_container_width=True, config={'displayModeBar': False})
+            if donut_fig:
+                st.plotly_chart(donut_fig, use_container_width=True, config={'displayModeBar': False})
         with inner_r:
             st.markdown("<br>", unsafe_allow_html=True)
             avg_rate = df["proxy_return_rate"].mean() if not df.empty else 0
@@ -130,23 +132,29 @@ if selected_view == 'Dashboard':
 
     # Metrics Row
     m1, m2, m3, m4 = st.columns(4)
-    with m1: st.markdown(metric_card("Total Sellers", f"{len(df):,}", sub="Filtered marketplace"), unsafe_allow_html=True)
-    with m2: st.markdown(metric_card("Avg Return Rate", f"{avg_rate:.1%}", delta=f"{'+' if np.random.rand()>0.5 else '-'}{np.random.rand()*3:.1%}"), unsafe_allow_html=True)
-    with m3: st.markdown(metric_card("Highest CATE", f"+{catemax:.1%}", delta=f"+{np.random.rand()*10:.1%}"), unsafe_allow_html=True)
+    with m1:
+        st.markdown(metric_card("Total Sellers", f"{len(df):,}", sub="Filtered marketplace"), unsafe_allow_html=True)
+    with m2:
+        st.markdown(metric_card("Avg Return Rate", f"{avg_rate:.1%}", delta=f"{'+' if np.random.rand()>0.5 else '-'}{np.random.rand()*3:.1%}"), unsafe_allow_html=True)
+    with m3:
+        st.markdown(metric_card("Highest CATE", f"+{catemax:.1%}", delta=f"+{np.random.rand()*10:.1%}"), unsafe_allow_html=True)
     
     # Calculate returns preventable for filtered set
     t15 = int(len(df) * 0.15) if len(df) > 0 else 0
     tot_ret = df["proxy_return_rate"].sum() if not df.empty else 1
     pct_prev = (df.sort_values("cate", ascending=False).head(t15)["proxy_return_rate"].sum() / tot_ret * 100) if tot_ret > 0 else 0
-    with m4: st.markdown(metric_card("Returns Impact", f"{pct_prev:.0f}%", sub="Preventable by top 15%"), unsafe_allow_html=True)
+    with m4:
+        st.markdown(metric_card("Returns Impact", f"{pct_prev:.0f}%", sub="Preventable by top 15%"), unsafe_allow_html=True)
 
     if st.session_state.selected_seller != "All Sellers":
         st.markdown("---")
         st.markdown(f'<div style="color: #58a6ff; font-size: 16px; font-weight: 600; margin-bottom: 10px;">Quick Insight: {st.session_state.selected_seller}</div>', unsafe_allow_html=True)
         s_row = df_raw[df_raw["seller_id"] == st.session_state.selected_seller].iloc[0]
         i1, i2, i3 = st.columns(3)
-        with i1: st.markdown(metric_card("Seller CATE", f"{s_row['cate']:+.2%}", sub="Individual causal impact"), unsafe_allow_html=True)
-        with i2: st.write(f"Category: **{s_row['category']}**")
+        with i1:
+            st.markdown(metric_card("Seller CATE", f"{s_row['cate']:+.2%}", sub="Individual causal impact"), unsafe_allow_html=True)
+        with i2:
+            st.write(f"Category: **{s_row['category']}**")
         with i3: 
             if st.button("Go to full profile"): 
                 # Note: sac.menu doesn't easily allow programmatic navigation without complex state, 
@@ -176,4 +184,4 @@ elif selected_view == 'Policy Simulator':
     render_policy(df_raw[df_raw["category"] == st.session_state.selected_sector] if st.session_state.selected_sector != "All Sectors" else df_raw)
 
 else:
-    st.info(f"Navigate using the sidebar to explore the platform.")
+    st.info("Navigate using the sidebar to explore the platform.")

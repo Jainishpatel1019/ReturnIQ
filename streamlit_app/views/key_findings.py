@@ -45,5 +45,4 @@ def render(df: pd.DataFrame) -> None:
         st.markdown(metric_card("Model Precision", "88%", sub="Accuracy of risk flagging"), unsafe_allow_html=True)
 
     st.markdown(section_header("Segment Stability"), unsafe_allow_html=True)
-    st.markdown(f'<div class="glass-card" style="color: #f0f6fc; font-size: 14px;">The selected segment shows a temporal stability score of <b>0.92</b>, indicating that behavioral patterns here are highly predictable and anchored in operational history rather than fleeting market trends.</div>', unsafe_allow_html=True)
- Greenland
+    st.markdown('<div class="glass-card" style="color: #f0f6fc; font-size: 14px;">The selected segment shows a temporal stability score of <b>0.92</b>, indicating that behavioral patterns here are highly predictable and anchored in operational history rather than fleeting market trends.</div>', unsafe_allow_html=True)
