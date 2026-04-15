@@ -1,3 +1,8 @@
+"""
+Key Findings View — Final Insights Layer
+Displays the primary business results derived from the Double ML model.
+Focuses on η² (Effect Size) and AUUC (Area Under Uplift Curve) benchmarking.
+"""
 import streamlit as st
 import pandas as pd
 import os

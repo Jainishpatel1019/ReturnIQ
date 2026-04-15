@@ -1,3 +1,8 @@
+"""
+Seller Intelligence View — Individual Causal Breakdown
+Renders individual-level CATE (Conditional Average Treatment Effect) estimates.
+Includes SHAP interaction effects and temporal drift stable-p check.
+"""
 import streamlit as st
 import numpy as np
 import pandas as pd
