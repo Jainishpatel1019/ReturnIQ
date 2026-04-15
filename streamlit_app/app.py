@@ -32,11 +32,15 @@ if os.path.exists(css_path):
 
 @st.cache_data
 def load_data() -> pd.DataFrame:
+    # base_dir = project root (one level above streamlit_app/)
     base_dir = os.path.dirname(os.path.dirname(__file__))
     candidates = [
-        os.path.join(os.path.dirname(__file__), "data/processed/final_dashboard_data.parquet"),
+        # Primary: project-root data/processed/
         os.path.join(base_dir, "data/processed/final_dashboard_data.parquet"),
-        "streamlit_app/data/dashboard_sample.parquet"
+        # Fallback: sample file at project-root data/processed/
+        os.path.join(base_dir, "data/processed/dashboard_sample.parquet"),
+        # Last resort: sample relative to CWD (e.g. HuggingFace Spaces)
+        os.path.join(base_dir, "data/sample/dashboard_sample.parquet"),
     ]
     for p in candidates:
         if pathlib.Path(p).exists():

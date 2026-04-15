@@ -26,13 +26,13 @@ def render(df: pd.DataFrame) -> None:
     with st.container():
         c1, c2 = st.columns([1, 1])
         with c1:
-            cat_list = ["All"] + sorted(df["category"].unique().tolist())
+            cat_list = ["All Sectors"] + sorted(df["category"].unique().tolist())
             def_cat_idx = cat_list.index(global_sector) if global_sector in cat_list else 0
             category = st.selectbox("Market Category", cat_list, index=def_cat_idx)
         with c2:
-            st.info("💡 Pro Tip: Select 'All' categories to see the market-wide risk heatmap below.")
-        
-        if category != "All":
+            st.info("💡 Pro Tip: Select 'All Sectors' to see the market-wide risk chart below.")
+
+        if category != "All Sectors":
             df_view = df_view[df_view["category"] == category]
 
         df_view = df_view.sort_values("cate", ascending=False)
@@ -92,12 +92,36 @@ def render(df: pd.DataFrame) -> None:
     # --- MARKET COMPARISON ---
     st.markdown(section_header("Market Comparison", "Ranking vs peers"), unsafe_allow_html=True)
     
-    if category == "All":
-        sample_df = df.sample(min(100, len(df)))
-        st.markdown('<div class="chart-card"><div style="font-size: 13px; color: #8b949e; margin-bottom: 10px;">Causal Impact by Seller & Category</div>', unsafe_allow_html=True)
-        heat_data = sample_df.pivot_table(index='seller_id', columns='category', values='cate')
-        fig_heat = px.imshow(heat_data, color_continuous_scale='Viridis', aspect='auto')
-        fig_heat, cfg_heat = apply_chart_theme(fig_heat, height=400)
+    if category == "All Sectors":
+        # Show top 20 sellers per category as a grouped horizontal bar chart
+        # (pivot heatmap was 66.7% NaN since each seller belongs to exactly one category)
+        top_per_cat = (
+            df.sort_values("cate", ascending=False)
+              .groupby("category", group_keys=False)
+              .head(20)
+              .sort_values("cate", ascending=True)
+        )
+        top_per_cat["highlight"] = top_per_cat["seller_id"].apply(
+            lambda s: "Selected" if s == row["seller_id"] else s.split("_")[0]
+        )
+        color_map = {"Selected": "#f85149"}
+        st.markdown('<div class="chart-card"><div style="font-size: 13px; color: #8b949e; margin-bottom: 10px;">Top 20 Sellers by CATE — All Categories</div>', unsafe_allow_html=True)
+        fig_heat = px.bar(
+            top_per_cat,
+            x="cate",
+            y="seller_id",
+            color="category",
+            orientation="h",
+            hover_data=["proxy_return_rate", "seller_quality_score"],
+            color_discrete_sequence=["#58a6ff", "#39C5BB", "#3fb950"],
+        )
+        # Highlight the selected seller
+        if row["seller_id"] in top_per_cat["seller_id"].values:
+            sel_cate = top_per_cat.loc[top_per_cat["seller_id"] == row["seller_id"], "cate"].values[0]
+            fig_heat.add_vline(x=sel_cate, line_width=2, line_dash="dot", line_color="#f85149",
+                               annotation_text="Selected", annotation_position="top right",
+                               annotation_font_color="#f85149")
+        fig_heat, cfg_heat = apply_chart_theme(fig_heat, height=450)
         st.plotly_chart(fig_heat, config=cfg_heat, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
     else:
