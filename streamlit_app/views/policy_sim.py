@@ -41,9 +41,9 @@ def render(df: pd.DataFrame) -> None:
     with m3:
         st.markdown(metric_card("False Positives", f"{fpr:.1f}%", sub="Good sellers flagged", color="#d29922"), unsafe_allow_html=True)
     with m4:
-        st.markdown(metric_card("Target Efficiency", f"{pct_prev/pct_flagged:.1f}x", sub="Vs random choice"), unsafe_allow_html=True)
+        st.markdown(metric_card("Target Efficiency", f"{pct_prev/pct_flagged if pct_flagged>0 else 0:.1f}x", sub="Vs random choice"), unsafe_allow_html=True)
 
-    st.markdown(section_header("Prevention vs Precision Tradeoff"))
+    st.markdown(section_header("Prevention vs Precision Tradeoff"), unsafe_allow_html=True)
     
     ts = np.linspace(df["cate"].min(), df["cate"].max(), 60)
     pprev = [df[df["cate"]>=t]["proxy_return_rate"].sum()/tot_ret*100 if tot_ret>0 else 0 for t in ts]
@@ -58,7 +58,7 @@ def render(df: pd.DataFrame) -> None:
     fig, cfg = apply_chart_theme(fig, height=350)
     st.plotly_chart(fig, config=cfg, use_container_width=True)
 
-    st.markdown(section_header("Flagging Distribution"))
+    st.markdown(section_header("Flagging Distribution"), unsafe_allow_html=True)
     dpp = df.copy()
     dpp["Status"] = dpp["cate"].apply(lambda x: "Flagged" if x >= threshold else "Safe")
     fig2 = px.histogram(dpp, x="proxy_return_rate", color="Status", nbins=50, barmode="overlay", opacity=0.7, color_discrete_map={"Flagged": "#f85149", "Safe": "#3fb950"})

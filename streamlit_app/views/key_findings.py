@@ -17,12 +17,7 @@ def render(df: pd.DataFrame) -> None:
         return
 
     # 1. Finding One
-    st.markdown(f"""
-    <div style="display: flex; align-items: center; margin-bottom: 20px;">
-        {_finding_number(1)}
-        <div style="font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 600; color: #f0f6fc;">Sellers drive returns — not just categories</div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f'<div style="display: flex; align-items: center; margin-bottom: 20px;">{_finding_number(1)}<div style="font-family: \'Inter\', sans-serif; font-size: 20px; font-weight: 600; color: #f0f6fc;">Sellers drive returns — not just categories</div></div>', unsafe_allow_html=True)
 
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -32,22 +27,12 @@ def render(df: pd.DataFrame) -> None:
     with c3:
         st.markdown(metric_card("Unexplained", "41%", sub="Random market noise", color="#8b949e"), unsafe_allow_html=True)
     
-    st.markdown("""
-    <div class="glass-card" style="margin-top: 20px; color: #8b949e; font-size: 14px; line-height: 1.6;">
-        Our variance decomposition shows that <b>seller behavior</b> is a more powerful predictor of returns than the product category itself. 
-        This means high return rates are often operational failures, not just bad luck with product assortment.
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown('<div class="glass-card" style="margin-top: 20px; color: #8b949e; font-size: 14px; line-height: 1.6;">Our variance decomposition shows that <b>seller behavior</b> is a more powerful predictor of returns than the product category itself. This means high return rates are often operational failures, not just bad luck with product assortment.</div>', unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
     # 2. Finding Two
-    st.markdown(f"""
-    <div style="display: flex; align-items: center; margin-bottom: 20px;">
-        {_finding_number(2, "#3fb950")}
-        <div style="font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 600; color: #f0f6fc;">Precision: 15% effort for 34% reduction</div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f'<div style="display: flex; align-items: center; margin-bottom: 20px;">{_finding_number(2, "#3fb950")}<div style="font-family: \'Inter\', sans-serif; font-size: 20px; font-weight: 600; color: #f0f6fc;">Precision: 15% effort for 34% reduction</div></div>', unsafe_allow_html=True)
 
     t15 = int(len(df) * 0.15)
     tot_ret = df["proxy_return_rate"].sum()
@@ -59,10 +44,5 @@ def render(df: pd.DataFrame) -> None:
     with m2:
         st.markdown(metric_card("Model Precision", "88%", sub="Accuracy of risk flagging"), unsafe_allow_html=True)
 
-    st.markdown(section_header("Temporal Stability Proof"))
-    st.markdown("""
-    <div class="glass-card" style="color: #f0f6fc; font-size: 14px;">
-        Validation against 2025 live API data confirmed that the causal patterns identified in 2023 remain stable. 
-        The model AUUC only drifted by <b>0.03</b> units over a 24-month period, indicating deep behavioral anchoring.
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(section_header("Temporal Stability Proof"), unsafe_allow_html=True)
+    st.markdown('<div class="glass-card" style="color: #f0f6fc; font-size: 14px;">Validation against 2025 live API data confirmed that the causal patterns identified in 2023 remain stable. The model AUUC only drifted by <b>0.03</b> units over a 24-month period, indicating deep behavioral anchoring.</div>', unsafe_allow_html=True)

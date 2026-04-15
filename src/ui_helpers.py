@@ -3,18 +3,10 @@ import pandas as pd
 import plotly.graph_objects as go
 
 def metric_card(label, value, sub="", color="#5b8fff", delta=""):
-    """Returns a glassmorphism metric card."""
+    """Returns a glassmorphism metric card as a single-line HTML string."""
     delta_html = f'<div class="metric-delta-pos">{delta}</div>' if delta else ""
-    return f"""
-<div class="glass-card">
-    <div class="metric-label">{label}</div>
-    <div style="display: flex; align-items: baseline; gap: 10px;">
-        <div class="metric-value">{value}</div>
-        {delta_html}
-    </div>
-    <div style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 400; color: #6e7681; margin-top: 4px;">{sub}</div>
-</div>
-""".strip()
+    html = f"""<div class="glass-card"><div class="metric-label">{label}</div><div style="display: flex; align-items: baseline; gap: 10px;"><div class="metric-value">{value}</div>{delta_html}</div><div style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 400; color: #6e7681; margin-top: 4px;">{sub}</div></div>"""
+    return html.strip().replace("\n", "")
 
 def apply_chart_theme(fig, height=350, show_grid=True):
     fig.update_layout(
@@ -54,29 +46,16 @@ def apply_chart_theme(fig, height=350, show_grid=True):
     return fig, {"displayModeBar": False, "responsive": True}
 
 def page_header(title, subtitle):
-    return f"""
-<div style="margin-bottom: 32px;">
-    <div style="font-family: 'Inter', sans-serif; font-size: 32px; font-weight: 700; color: #f0f6fc; letter-spacing: -0.5px;">{title}</div>
-    <div style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 400; color: #8b949e; margin-top: 4px;">{subtitle}</div>
-</div>
-""".strip()
+    html = f"""<div style="margin-bottom: 32px;"><div style="font-family: 'Inter', sans-serif; font-size: 32px; font-weight: 700; color: #f0f6fc; letter-spacing: -0.5px;">{title}</div><div style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 400; color: #8b949e; margin-top: 4px;">{subtitle}</div></div>"""
+    return html.strip().replace("\n", "")
 
 def section_header(title, subtitle=""):
-    return f"""
-<div style="margin-top: 32px; margin-bottom: 16px; border-left: 3px solid #58a6ff; padding-left: 15px;">
-    <div style="font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 600; color: #f0f6fc;">{title}</div>
-    <div style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 400; color: #8b949e; margin-top: 2px;">{subtitle}</div>
-</div>
-""".strip()
+    html = f"""<div style="margin-top: 32px; margin-bottom: 16px; border-left: 3px solid #58a6ff; padding-left: 15px;"><div style="font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 600; color: #f0f6fc;">{title}</div><div style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 400; color: #8b949e; margin-top: 2px;">{subtitle}</div></div>"""
+    return html.strip().replace("\n", "")
 
 def chart_card(title, subtitle=""):
     subtitle_html = f'<div style="font-family: \'Inter\', sans-serif; font-size: 12px; color: #8b949e;">{subtitle}</div>' if subtitle else ""
-    st.markdown(f"""
-    <div style="margin-bottom: 10px;">
-        <div style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #f0f6fc;">{title}</div>
-        {subtitle_html}
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f"""<div style="margin-bottom: 10px;"><div style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #f0f6fc;">{title}</div>{subtitle_html}</div>""", unsafe_allow_html=True)
 
 def risk_badge(cate, low=0.01, high=0.04):
     if pd.isna(cate):
@@ -98,7 +77,7 @@ def glossary_expander():
             ("Seller Quality Score", "A composite score checking listing accuracy, fulfillment consistency, and sentiment.")
         ]
         html_rows = "".join([f'<div style="display: flex; padding: 8px 0; border-bottom: 1px solid #21262d;"><div style="flex: 1; color: #5b8fff; font-weight: 500; font-size: 13px;">{t}</div><div style="flex: 2; color: #8b949e; font-size: 13px;">{d}</div></div>' for t, d in terms])
-        st.markdown(f'<div style="font-family: \'Inter\', sans-serif;">{html_rows}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="font-family: \'Inter\', sans-serif; border-top: 1px solid #21262d;">{html_rows}</div>', unsafe_allow_html=True)
 
 def create_donut_chart(df):
     """Creates a donut chart matching 'Data Visuatics' in the mockup."""
@@ -115,12 +94,18 @@ def create_donut_chart(df):
     )])
     
     fig.update_layout(
-        showlegend=True,
-        legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.1),
+         showlegend=True,
+        legend=dict(
+            orientation="v", 
+            yanchor="middle", 
+            y=0.5, 
+            xanchor="left", 
+            x=1.1,
+            font=dict(family="Inter, sans-serif", color="#8b949e", size=11)
+        ),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         margin=dict(l=0, r=0, t=0, b=0),
         height=220,
-        font=dict(family="Inter, sans-serif", color="#8b949e", size=11),
     )
     return fig

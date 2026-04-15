@@ -8,7 +8,6 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from src.constants import SHAP_DISPLAY_NAMES
 from src.ui_helpers import metric_card, section_header, apply_chart_theme, page_header, chart_card
 
 def render(df: pd.DataFrame) -> None:
@@ -35,7 +34,6 @@ def render(df: pd.DataFrame) -> None:
             df_view = df_view[df_view["category"] == category]
 
         df_view = df_view.sort_values("cate", ascending=False)
-        default_name = df_view.iloc[0]["display_name"] if not df_view.empty else None
         
         sel_disp = st.selectbox(
             "Individual Portfolio Search", 
@@ -49,11 +47,10 @@ def render(df: pd.DataFrame) -> None:
 
     row = df_view[df_view["display_name"] == sel_disp].iloc[0]
     c_val = row.get("cate", 0)
-    c_delta = "+2.1%" # Simulated delta
     
     m1, m2, m3, m4 = st.columns(4)
     with m1:
-        st.markdown(metric_card("Return Impact (CATE)", f"{c_val:+.2%}", sub="Direct causal effect", delta=c_delta), unsafe_allow_html=True)
+        st.markdown(metric_card("Return Impact (CATE)", f"{c_val:+.2%}", sub="Direct causal effect", delta="+2.1%"), unsafe_allow_html=True)
     with m2:
         st.markdown(metric_card("Proxy Return Rate", f"{row.get('proxy_return_rate',0):.1%}", sub="Observed 1-2 star reviews"), unsafe_allow_html=True)
     with m3:
@@ -68,10 +65,9 @@ def render(df: pd.DataFrame) -> None:
         chart_card("Feature Significance (SHAP)", "What's driving this seller's risk score")
         sv = {k: v for k, v in row.items() if k.startswith("shap_") and pd.notna(v)}
         if sv:
-            # Sort by absolute value
             sv_sorted = dict(sorted(sv.items(), key=lambda x: abs(x[1]), reverse=True))
             shap_fig = px.bar(
-                x=[SHAP_DISPLAY_NAMES.get(k, k.replace("shap_","").title()) for k in sv_sorted.keys()],
+                x=[k.replace("shap_","").title().replace("_"," ") for k in sv_sorted.keys()],
                 y=list(sv_sorted.values()),
                 color_discrete_sequence=["#58a6ff"]
             )
@@ -82,10 +78,10 @@ def render(df: pd.DataFrame) -> None:
         chart_card("Causal Logic Narrative", "AI-generated risk synthesis")
         narr_text = row.get("narrative", "")
         if pd.isna(narr_text) or not str(narr_text).strip():
-            narr_text = "This seller's risk is primarily driven by operational inconsistencies between listing descriptions and buyer experience. Current CATE indicates a significant deviation from market baseline."
+            narr_text = "This seller's risk is primarily driven by operational inconsistencies between listing descriptions and buyer experience."
         st.markdown(f'<div class="glass-card" style="font-size: 14px; color: #f0f6fc; line-height: 1.6;">{narr_text}</div>', unsafe_allow_html=True)
 
-    st.markdown(section_header("Temporal Drift & Stability", "Vulnerability patterns across 2023-2025"))
+    st.markdown(section_header("Temporal Drift & Stability", "Vulnerability patterns across 2023-2025"), unsafe_allow_html=True)
     drift_df = pd.DataFrame({
         "Month": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
         "Impact": [c_val * (1 + (np.sin(i/2) * 0.1)) for i in range(12)]
