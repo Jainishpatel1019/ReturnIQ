@@ -22,15 +22,24 @@ def load_data() -> pd.DataFrame:
     candidates = [
         os.path.join(os.path.dirname(__file__), "data/processed/final_dashboard_data.parquet"),
         os.path.join(base_dir, "data/processed/final_dashboard_data.parquet"),
-        os.path.join(base_dir, "streamlit_app/data/dashboard_sample.parquet")
+        "streamlit_app/data/dashboard_sample.parquet",
+        "data/processed/final_dashboard_data.parquet"
     ]
     for p in candidates:
         if pathlib.Path(p).exists():
-            return pd.read_parquet(p)
+            try:
+                return pd.read_parquet(p)
+            except Exception as e:
+                st.error(f"Error reading {p}: {e}")
     return pd.DataFrame()
 
-with st.spinner("Loading seller data..."):
+with st.spinner("Initializing ReturnIQ Causal Engine..."):
     df = load_data()
+
+if df.empty:
+    st.error("📉 **Data Load Failure**: Dashboard data not found.")
+    st.info("Please ensure `data/processed/final_dashboard_data.parquet` is present.")
+    st.stop()
 
 st.sidebar.markdown('<div style="font-family: \'Inter\', sans-serif; font-size: 16px; font-weight: 600; color: #f0f6fc; letter-spacing: -0.2px; margin-bottom: 12px;">ReturnIQ</div>', unsafe_allow_html=True)
 st.sidebar.caption(f"{len(df):,} sellers indexed")
