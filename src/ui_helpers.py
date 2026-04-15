@@ -61,6 +61,23 @@ def page_header(title, subtitle):
 </div>
 """.strip()
 
+def section_header(title, subtitle=""):
+    return f"""
+<div style="margin-top: 32px; margin-bottom: 16px; border-left: 3px solid #58a6ff; padding-left: 15px;">
+    <div style="font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 600; color: #f0f6fc;">{title}</div>
+    <div style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 400; color: #8b949e; margin-top: 2px;">{subtitle}</div>
+</div>
+""".strip()
+
+def chart_card(title, subtitle=""):
+    subtitle_html = f'<div style="font-family: \'Inter\', sans-serif; font-size: 12px; color: #8b949e;">{subtitle}</div>' if subtitle else ""
+    st.markdown(f"""
+    <div style="margin-bottom: 10px;">
+        <div style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #f0f6fc;">{title}</div>
+        {subtitle_html}
+    </div>
+    """, unsafe_allow_html=True)
+
 def risk_badge(cate, low=0.01, high=0.04):
     if pd.isna(cate):
         return ""
