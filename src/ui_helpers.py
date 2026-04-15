@@ -1,55 +1,63 @@
 import streamlit as st
 import pandas as pd
+import plotly.graph_objects as go
 
-def metric_card(label, value, sub="", color="#5b8fff", icon=""):
-    """Returns self-contained HTML div for a styled metric card."""
-    icon_html = f'<div style="float: right; font-size: 20px; color: {color};">{icon}</div>' if icon else ""
+def metric_card(label, value, sub="", color="#5b8fff", delta=""):
+    """Returns a glassmorphism metric card."""
+    delta_html = f'<div class="metric-delta-pos">{delta}</div>' if delta else ""
     return f"""
-<div style="background-color: #161b22; border: 1px solid #21262d; border-left: 3px solid {color}; border-radius: 10px; padding: 1rem 1.25rem;">
-{icon_html}
-<div style="font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; text-transform: uppercase; color: #8b949e; letter-spacing: 0.05em;">{label}</div>
-<div style="font-family: 'Inter', sans-serif; font-size: 28px; font-weight: 600; color: #f0f6fc; margin: 4px 0;">{value}</div>
-<div style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 400; color: #6e7681;">{sub}</div>
+<div class="glass-card">
+    <div class="metric-label">{label}</div>
+    <div style="display: flex; align-items: baseline; gap: 10px;">
+        <div class="metric-value">{value}</div>
+        {delta_html}
+    </div>
+    <div style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 400; color: #6e7681; margin-top: 4px;">{sub}</div>
 </div>
 """.strip()
 
-def section_header(title, subtitle="", badge="", badge_color="#5b8fff"):
-    badge_html = f'<span style="float: right; font-size: 10px; font-weight: 500; border-radius: 20px; padding: 2px 10px; background-color: {badge_color}22; color: {badge_color}; border: 1px solid {badge_color}44;">{badge}</span>' if badge else ""
-    return f"""
-<div style="border-bottom: 1px solid #21262d; padding-bottom: 10px; margin-bottom: 16px;">
-{badge_html}
-<div style="font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; color: #e6edf3;">{title}</div>
-<div style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 400; color: #8b949e; margin-top: 2px;">{subtitle}</div>
-</div>
-""".strip()
-
-def apply_chart_theme(fig, height=380):
+def apply_chart_theme(fig, height=350, show_grid=True):
     fig.update_layout(
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="Inter, sans-serif", color="#c9d1d9", size=12),
-        xaxis=dict(showgrid=False, linecolor="#30363d", zeroline=False, tickfont=dict(color="#8b949e")),
-        yaxis=dict(showgrid=True, gridcolor="#21262d", gridwidth=0.5, linecolor="#30363d", zeroline=False, tickfont=dict(color="#8b949e")),
-        legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(color="#8b949e"), borderwidth=0),
-        margin=dict(l=10, r=10, t=40, b=10),
-        height=height
+        font=dict(family="Inter, sans-serif", color="#8b949e", size=12),
+        xaxis=dict(
+            showgrid=False, 
+            linecolor="rgba(48, 54, 61, 0.5)", 
+            zeroline=False, 
+            tickfont=dict(color="#8b949e"),
+            gridcolor="rgba(48, 54, 61, 0.2)"
+        ),
+        yaxis=dict(
+            showgrid=show_grid, 
+            gridcolor="rgba(48, 54, 61, 0.2)", 
+            gridwidth=0.5, 
+            linecolor="rgba(48, 54, 61, 0.5)", 
+            zeroline=False, 
+            tickfont=dict(color="#8b949e")
+        ),
+        legend=dict(
+            bgcolor="rgba(0,0,0,0)", 
+            font=dict(color="#8b949e", size=11), 
+            borderwidth=0,
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
+        margin=dict(l=10, r=10, t=10, b=10),
+        height=height,
+        hovermode="x unified",
+        hoverlabel=dict(bgcolor="#161b22", font_size=12, font_family="Inter")
     )
-    if fig.layout.title and fig.layout.title.text:
-        fig.update_layout(title_font=dict(color="#e6edf3"))
     return fig, {"displayModeBar": False, "responsive": True}
 
-def page_header(title, subtitle, status="Live", ok=True):
-    if ok:
-        pill_style = "background-color: #3fb95022; color: #3fb950; border: 1px solid #3fb95044;"
-    else:
-        pill_style = "background-color: #d2992222; color: #d29922; border: 1px solid #d2992244;"
+def page_header(title, subtitle):
     return f"""
-<div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #21262d; padding-bottom: 20px; margin-bottom: 24px;">
-<div>
-<div style="font-family: 'Inter', sans-serif; font-size: 22px; font-weight: 600; color: #f0f6fc; letter-spacing: -0.3px;">{title}</div>
-<div style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 400; color: #8b949e; margin-top: 4px;">{subtitle}</div>
-</div>
-<div style="font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; border-radius: 20px; padding: 3px 10px; {pill_style}">{status}</div>
+<div style="margin-bottom: 32px;">
+    <div style="font-family: 'Inter', sans-serif; font-size: 32px; font-weight: 700; color: #f0f6fc; letter-spacing: -0.5px;">{title}</div>
+    <div style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 400; color: #8b949e; margin-top: 4px;">{subtitle}</div>
 </div>
 """.strip()
 
@@ -74,3 +82,28 @@ def glossary_expander():
         ]
         html_rows = "".join([f'<div style="display: flex; padding: 8px 0; border-bottom: 1px solid #21262d;"><div style="flex: 1; color: #5b8fff; font-weight: 500; font-size: 13px;">{t}</div><div style="flex: 2; color: #8b949e; font-size: 13px;">{d}</div></div>' for t, d in terms])
         st.markdown(f'<div style="font-family: \'Inter\', sans-serif;">{html_rows}</div>', unsafe_allow_html=True)
+
+def create_donut_chart(df):
+    """Creates a donut chart matching 'Data Visuatics' in the mockup."""
+    if df.empty or "category" not in df.columns:
+        return None
+    
+    counts = df["category"].value_counts().head(5)
+    fig = go.Figure(data=[go.Pie(
+        labels=counts.index, 
+        values=counts.values, 
+        hole=.7,
+        marker=dict(colors=["#58a6ff", "#39C5BB", "#3fb950", "#79c0ff", "#1f6feb"]),
+        textinfo='none'
+    )])
+    
+    fig.update_layout(
+        showlegend=True,
+        legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.1),
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=0, r=0, t=0, b=0),
+        height=220,
+        font=dict(family="Inter, sans-serif", color="#8b949e", size=11),
+    )
+    return fig

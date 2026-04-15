@@ -1,19 +1,108 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-.stApp { background-color: #0d1117; }
-[data-testid="stSidebar"] { background-color: #010409; border-right: 1px solid #21262d; }
-.block-container { padding: 2rem 2.5rem; max-width: 1200px; }
-h1 { font-family: 'Inter', sans-serif; font-size: 22px; font-weight: 600; color: #f0f6fc; letter-spacing: -0.3px; }
-h2, h3 { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; color: #e6edf3; }
-[data-testid="stMetric"] { background-color: #161b22; border: 1px solid #21262d; border-radius: 10px; border-left: 3px solid #5b8fff; }
-[data-testid="stMetricLabel"] { font-size: 11px; text-transform: uppercase; color: #8b949e; letter-spacing: 0.05em; font-family: 'Inter', sans-serif; }
-[data-testid="stMetricValue"] { font-size: 28px; font-weight: 600; color: #f0f6fc; font-family: 'Inter', sans-serif; }
-.stButton > button { background-color: #21262d; border: 1px solid #30363d; border-radius: 8px; }
-.stButton > button:hover { background-color: #30363d; }
-.stSelectbox, .stTextInput { background-color: #161b22; border: 1px solid #30363d; border-radius: 8px; }
-[data-testid="stSlider"] .st-eb { background-color: #5b8fff; }
-[data-testid="stSlider"] .stSliderThumb { background-color: #5b8fff; }
-hr { border-color: #21262d; }
-[data-testid="stAlert"] { border-radius: 8px; font-size: 13px; }
+:root {
+    --bg-main: #0A0E12;
+    --bg-sidebar: #010409;
+    --card-bg: rgba(22, 27, 34, 0.7);
+    --card-border: rgba(48, 54, 61, 0.5);
+    --accent-blue: #58a6ff;
+    --accent-green: #3fb950;
+    --accent-cyan: #39C5BB;
+    --text-main: #f0f6fc;
+    --text-muted: #8b949e;
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+.stApp {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+}
+
+[data-testid="stSidebar"] {
+    background-color: var(--bg-sidebar);
+    border-right: 1px solid var(--card-border);
+}
+
+.block-container {
+    padding: 3rem 4rem;
+    max-width: 1400px;
+}
+
+/* Glassmorphism Card */
+.glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(88, 166, 255, 0.4);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Chart Card */
+.chart-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* Metric Styles */
+.metric-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.metric-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.metric-delta-pos {
+    color: var(--accent-green);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Hide Streamlit elements */
 #MainMenu, footer, header { visibility: hidden; }
 .stDeployButton { display: none; }
+
+/* Sidebar adjustments */
+.sidebar-logo {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Custom Chart Container */
+.chart-container {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+/* Filter buttons */
+.stSelectbox div[data-baseweb="select"] {
+    background-color: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+}

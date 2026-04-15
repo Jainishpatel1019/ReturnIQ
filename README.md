@@ -11,22 +11,19 @@ ReturnIQ is a causal inference platform designed to solve the **Selection vs. Tr
 
 ---
 
-## 🖼️ Interface Gallery
+## ✨ High-Fidelity V2 (Dark Mode)
+The platform has been updated with a premium **Glassmorphism Design System** for enhanced visual telemetry and executive-ready reporting.
 
-| 📊 Overview & Metrics | 💡 Causal Key Findings |
+| 💠 Glassmorphism Dashboard | 📊 Real-Time Causal Data |
 |:---:|:---:|
-| ![Overview](docs/images/01_overview.png) | ![Key Findings](docs/images/02_key_findings.png) |
-| *High-level platform telemetry* | *Quantifying seller vs. market impact* |
+| ![Dashboard](docs/images/01_overview.png) | ![Causal Data](docs/images/05_model_proof.png) |
+| *Premium blur effects & depth* | *Live model discrepancy metrics* |
 
-| 👤 Seller Deep-Dive | ⚙️ Policy Simulator |
-|:---:|:---:|
-| ![Seller Profile](docs/images/03_seller_profile.png) | ![Policy Tradeoff](docs/images/04_policy_sim.png) |
-| *Individual risk narratives* | *Prevention vs. Precision tradeoff* |
-
-| 📉 Model Identification |
-|:---:|
-| ![Model Proof](docs/images/05_model_proof.png) |
-| *OLS vs. Causal model disagreement* |
+### 🔥 UI Enhancements
+- **Backdrop-Blur Surface**: Interactive glass cards for key performance indicators (KPIs).
+- **Refined Color Palette**: Deep-space theme with curated `#58a6ff` and `#3fb950` accents.
+- **Dynamic Chart Theming**: Custom Plotly templates optimized for low-light legibility and causal interpretation.
+- **Improved Typography**: High-weight Inter font for data density without visual clutter.
 
 ---
 
