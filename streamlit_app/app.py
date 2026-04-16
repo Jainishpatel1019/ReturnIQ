@@ -80,7 +80,8 @@ with st.sidebar:
     
     st.sidebar.markdown("---")
     st.sidebar.caption("v2.4.0 · Production Ready")
-    st.sidebar.caption("Engine: CausalForestDML (EconML)")
+    st.sidebar.caption("Engine: Pre-computed DML (EconML)")
+    st.sidebar.caption("Scope: 3.7M Customer Reviews")
 
 # --- GLOBAL FILTERS (Stateful) ---
 if 'selected_sector' not in st.session_state:

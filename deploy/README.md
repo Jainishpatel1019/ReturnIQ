@@ -11,7 +11,8 @@ pinned: false
 
 # ReturnIQ — Causal Intelligence for Marketplace Returns
 
-End-to-end causal inference platform for analyzing product return rates across 3.7 million Amazon reviews.
+**Deployment Status**: Interactive Telemetry Dashboard
+This interface provides real-time access to high-fidelity **pre-computed** causal insights. The heavy-duty analytical pipeline (processing 3.7M reviews via EconML & DistilBERT) is executed offline to ensure zero-latency reporting for executive users.
 
 ## Key Capabilities
 1. **Isolated Impact (CATE)**: Measures the true causal effect of seller quality on returns.
