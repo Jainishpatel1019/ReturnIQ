@@ -7,8 +7,11 @@ import streamlit_antd_components as sac
 import plotly.graph_objects as go
 import numpy as np
 
-# Add src to path
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+# Add project root to path (works for local subdir and HF root)
+curr_dir = os.path.dirname(__file__)
+proj_root = os.path.dirname(curr_dir) if os.path.basename(curr_dir) == "streamlit_app" else curr_dir
+if proj_root not in sys.path:
+    sys.path.append(proj_root)
 from src.ui_helpers import (
     page_header, 
     metric_card, 
@@ -32,15 +35,17 @@ if os.path.exists(css_path):
 
 @st.cache_data
 def load_data() -> pd.DataFrame:
-    # base_dir = project root (one level above streamlit_app/)
-    base_dir = os.path.dirname(os.path.dirname(__file__))
+    # Robust path resolution: handle both local (subdir) and HF (root) environments
+    curr_dir = os.path.dirname(__file__)
+    proj_root = os.path.dirname(curr_dir) if os.path.basename(curr_dir) == "streamlit_app" else curr_dir
+    
     candidates = [
-        # Primary: project-root data/processed/
-        os.path.join(base_dir, "data/processed/final_dashboard_data.parquet"),
-        # Fallback: sample file at project-root data/processed/
-        os.path.join(base_dir, "data/processed/dashboard_sample.parquet"),
-        # Last resort: sample relative to CWD (e.g. HuggingFace Spaces)
-        os.path.join(base_dir, "data/sample/dashboard_sample.parquet"),
+        # Check relative to project root (works in both local and HF if structured correctly)
+        os.path.join(proj_root, "data", "processed", "final_dashboard_data.parquet"),
+        os.path.join(proj_root, "data", "processed", "dashboard_sample.parquet"),
+        os.path.join(proj_root, "data", "sample", "dashboard_sample.parquet"),
+        # Last resort: check immediate subfolder (unlikely but safe)
+        os.path.join(curr_dir, "data", "processed", "final_dashboard_data.parquet"),
     ]
     for p in candidates:
         if pathlib.Path(p).exists():
@@ -124,7 +129,7 @@ if selected_view == 'Dashboard':
             st.markdown("<br>", unsafe_allow_html=True)
             avg_rate = df["proxy_return_rate"].mean() if not df.empty else 0
             catemax = df["cate"].max() if not df.empty else 0
-            st.markdown(f'<div style="font-size: 13px; color: #8b949e; line-height: 2.2;"><span style="color: #58a6ff;">●</span> Total Sellers: <span style="color: #f0f6fc; float: right;">{len(df):,}</span><br><span style="color: #39C5BB;">●</span> Avg Return Rate: <span style="color: #3fb950; float: right;">{avg_rate:.1%}</span><br><span style="color: #3fb950;">●</span> Peaks (CATE): <span style="color: #3fb950; float: right;">{catemax:+.1%}</span></div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="font-size: 13px; color: #8b949e; line-height: 2.2;"><span style="color: #58a6ff;">●</span> Total Sellers: <span style="color: #f0f6fc; float: right;">{len(df):,}</span><br><span style="color: #39C5BB;">●</span> Proxy Return Rate (1-2★): <span style="color: #3fb950; float: right;">{avg_rate:.1%}</span><br><span style="color: #3fb950;">●</span> Peaks (CATE): <span style="color: #3fb950; float: right;">{catemax:+.1%}</span></div>', unsafe_allow_html=True)
     
     with c2:
         st.markdown('<div style="color: #f0f6fc; font-size: 14px; font-weight: 600; margin-bottom: 20px;">Risk Density (CATE Distribution)</div>', unsafe_allow_html=True)
@@ -154,7 +159,7 @@ if selected_view == 'Dashboard':
     with m2:
         # Calculate real delta vs global avg
         delta_val = (avg_rate - global_avg) / global_avg if global_avg > 0 else 0
-        st.markdown(metric_card("Avg Return Rate", f"{avg_rate:.1%}", delta=f"{delta_val:+.1%}", sub="Vs market global"), unsafe_allow_html=True)
+        st.markdown(metric_card("Proxy Return Rate", f"{avg_rate:.1%}", delta=f"{delta_val:+.1%}", sub="1-2★ review signal"), unsafe_allow_html=True)
     with m3:
         # Calculate real delta vs global cate max
         cmax_delta = (catemax - global_catemax) / abs(global_catemax) if global_catemax != 0 else 0

@@ -6,7 +6,11 @@ import numpy as np
 import sys
 import os
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+# Add project root to path
+curr_dir = os.path.dirname(__file__)
+proj_root = os.path.dirname(curr_dir) if os.path.basename(curr_dir) == "views" else curr_dir
+if proj_root not in sys.path:
+    sys.path.append(proj_root)
 
 from src.ui_helpers import section_header, apply_chart_theme, page_header
 

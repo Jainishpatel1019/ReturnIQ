@@ -4,8 +4,13 @@ import os
 import sys
 import numpy as np
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+# Add project root to path
+curr_dir = os.path.dirname(__file__)
+proj_root = os.path.dirname(curr_dir) if os.path.basename(curr_dir) == "views" else curr_dir
+if proj_root not in sys.path:
+    sys.path.append(proj_root)
 from src.ui_helpers import page_header, metric_card, section_header
+from src.variance_decomp import calculate_variance_decomposition
 
 def _finding_number(n, color="#58a6ff"):
     return f'<div style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 12px; background: {color}22; border: 1px solid {color}44; color: {color}; font-weight: 700; font-size: 16px; font-family: \'Inter\', sans-serif; margin-right: 15px;">{n}</div>'
@@ -17,15 +22,8 @@ def render(df: pd.DataFrame) -> None:
         st.warning("No data matches current filters.")
         return
 
-    # Dynamic Calculation of Explained Variance (CATE vs Observed)
-    # Rigor: Residual variation represents unobserved noise + unobserved seller traits.
-    cate_var = df["cate"].var() if len(df) > 1 else 0
-    obs_var = df["proxy_return_rate"].var() if len(df) > 1 else 1
-    
-    # Proportion of return rate variance driven by causal seller operations
-    seller_prop = (cate_var / obs_var) * 100 if obs_var > 0 else 0
-    seller_prop = min(max(seller_prop, 5), 95) 
-    market_prop = 100 - seller_prop
+    # Rigorous decomposition using our official module
+    seller_prop, market_prop = calculate_variance_decomposition(df)
 
     # 1. Finding One
     st.markdown(f'<div style="display: flex; align-items: center; margin-bottom: 20px;">{_finding_number(1)}<div style="font-family: \'Inter\', sans-serif; font-size: 20px; font-weight: 600; color: #f0f6fc;">Sellers drive returns — even in this segment</div></div>', unsafe_allow_html=True)
