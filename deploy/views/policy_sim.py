@@ -54,8 +54,7 @@ def render(df: pd.DataFrame) -> None:
 
     st.markdown(section_header("Prevention vs Precision Tradeoff"), unsafe_allow_html=True)
     
-    # Build tradeoff curve: sweep threshold from HIGH to LOW so flagged-seller
-    # count grows monotonically → smooth ROC-style curve, no zigzag
+    # Sweep high→low so flagged count grows monotonically → smooth ROC-style curve
     ts = np.linspace(df["cate"].max(), df["cate"].min(), 80)
     pprev_curve, fp_curve = [], []
     for t in ts:
@@ -67,8 +66,7 @@ def render(df: pd.DataFrame) -> None:
             pprev_curve.append(flagged_t["proxy_return_rate"].sum() / tot_ret * 100 if tot_ret > 0 else 0)
             fp_curve.append((flagged_t["proxy_return_rate"] < med_ret).mean() * 100)
 
-    # Sort by x-axis (fp_curve) to guarantee a non-backtracking line
-    pairs = sorted(zip(fp_curve, pprev_curve))
+    pairs  = sorted(zip(fp_curve, pprev_curve))
     fp_x   = [p[0] for p in pairs]
     prev_y = [p[1] for p in pairs]
 

@@ -59,9 +59,9 @@ def build_seller_features(db_path: str = DB_PATH) -> None:
     else:
         print("  ⚠  No embedding files found in data/embeddings/ — using rating_variance proxy.")
         print("     Run Week 3 Colab notebook first to generate embeddings.")
-        # Fallback: use inverted review count as listing_acc proxy
-        df["listing_acc"] = 1 - MinMaxScaler().fit_transform(
-            df[["rating_variance"]]
+        # Fallback: use normalized total_reviews as listing_acc proxy (more reviews = more 'proven' listing)
+        df["listing_acc"] = MinMaxScaler().fit_transform(
+            df[["total_reviews"]]
         ).flatten()
 
     # ── Composite quality score (equal-weight) ─────────────────────────────────

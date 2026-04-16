@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
+import numpy as np
 import sys
 import os
 
@@ -93,23 +95,34 @@ def render(df: pd.DataFrame) -> None:
     st.markdown(section_header("Market Comparison", "Ranking vs peers"), unsafe_allow_html=True)
     
     if category == "All Sectors":
-        # Grouped horizontal bar — top 20 per category (pivot heatmap was 66% NaN)
+        # Show top 20 sellers per category as a grouped horizontal bar chart
+        # (pivot heatmap was 66.7% NaN since each seller belongs to exactly one category)
         top_per_cat = (
             df.sort_values("cate", ascending=False)
               .groupby("category", group_keys=False)
               .head(20)
               .sort_values("cate", ascending=True)
         )
-        st.markdown('<div class="chart-card"><div style="font-size: 13px; color: #8b949e; margin-bottom: 10px;">Top 20 Sellers by CATE — All Categories</div>', unsafe_allow_html=True)
-        fig_heat = px.bar(
-            top_per_cat,
-            x="cate",
-            y="seller_id",
-            color="category",
-            orientation="h",
-            hover_data=["proxy_return_rate", "seller_quality_score"],
-            color_discrete_sequence=["#58a6ff", "#39C5BB", "#3fb950"],
+        top_per_cat["highlight"] = top_per_cat["seller_id"].apply(
+            lambda s: "Selected" if s == row["seller_id"] else s.split("_")[0]
         )
+        color_map = {"Selected": "#f85149"}
+        st.markdown('<div class="chart-card"><div style="font-size: 13px; color: #8b949e; margin-bottom: 10px;">Top 20 Sellers by CATE — All Categories</div>', unsafe_allow_html=True)
+        fig_heat = go.Figure()
+        cats = top_per_cat["category"].unique()
+        colors = ["#58a6ff", "#39C5BB", "#3fb950"]
+        for i, c in enumerate(cats):
+            cdf = top_per_cat[top_per_cat["category"] == c]
+            fig_heat.add_trace(go.Bar(
+                x=cdf["cate"].tolist(),
+                y=cdf["seller_id"].tolist(),
+                orientation="h",
+                name=str(c),
+                marker_color=colors[i % len(colors)],
+                text=cdf["proxy_return_rate"].tolist(),
+                hovertemplate="<b>%{y}</b><br>CATE: %{x:.2f}<br>Rate: %{text:.2%}<extra></extra>"
+            ))
+        # Highlight the selected seller
         if row["seller_id"] in top_per_cat["seller_id"].values:
             sel_cate = top_per_cat.loc[top_per_cat["seller_id"] == row["seller_id"], "cate"].values[0]
             fig_heat.add_vline(x=sel_cate, line_width=2, line_dash="dot", line_color="#f85149",
@@ -122,7 +135,13 @@ def render(df: pd.DataFrame) -> None:
         st.markdown(f'<div class="chart-card"><div style="font-size: 13px; color: #8b949e; margin-bottom: 10px;">Impact Ranking: {category} (Top 15 Sellers)</div>', unsafe_allow_html=True)
         top_15 = df[df["category"] == category].sort_values("cate", ascending=False).head(15)
         top_15["color"] = ["#39C5BB" if sid == row["seller_id"] else "#58a6ff" for sid in top_15["seller_id"]]
-        fig_comp = px.bar(top_15, x="seller_id", y="cate", color="color", color_discrete_map="identity")
+        fig_comp = go.Figure(go.Bar(
+            x=top_15["seller_id"].tolist(),
+            y=top_15["cate"].tolist(),
+            marker_color=top_15["color"].tolist(),
+            text=top_15["cate"].tolist(),
+            hovertemplate="<b>%{x}</b><br>CATE: %{y:.2f}<extra></extra>"
+        ))
         fig_comp.update_layout(showlegend=False)
         fig_comp, cfg_comp = apply_chart_theme(fig_comp, height=300)
         st.plotly_chart(fig_comp, config=cfg_comp, use_container_width=True)
