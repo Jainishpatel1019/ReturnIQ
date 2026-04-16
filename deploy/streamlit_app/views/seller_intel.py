@@ -13,9 +13,8 @@ if proj_root not in sys.path:
     sys.path.append(proj_root)
 
 from src.ui_helpers import metric_card, section_header, apply_chart_theme, page_header, chart_card
-import joblib
 
-def render(df: pd.DataFrame, causal_model=None) -> None:
+def render(df: pd.DataFrame) -> None:
     st.markdown(page_header("Seller Profile", "Individual risk and causal breakdown"), unsafe_allow_html=True)
 
     if "cate" not in df.columns:
@@ -164,61 +163,3 @@ def render(df: pd.DataFrame, causal_model=None) -> None:
                 f'<div style="color: #3fb950; font-size: 32px; font-weight: 700;">{stability_idx:.2f}</div>'
                 f'<div style="color: #8b949e; font-size: 12px;">Based on 200-iteration bootstrap variance</div>'
                 f'</div>', unsafe_allow_html=True)
-
-    # --- LIVE CAUSAL INFERENCE LAB ---
-    st.markdown(section_header("Live Causal Inference Lab", "Counterfactual (What-If) Simulation"), unsafe_allow_html=True)
-    
-    if causal_model:
-        st.markdown('<div class="glass-card" style="font-size: 14px; color: #f0f6fc; line-height: 1.6; margin-bottom: 20px;">'
-                    'Adjust the operational parameters below to see the **Live Causal Prediction** '
-                    'updated by the CausalForestDML estimator. This runs real EconML inference '
-                    'against the de-biased treatment effect.</div>', unsafe_allow_html=True)
-        
-        col_in1, col_in2, col_in3 = st.columns(3)
-        with col_in1:
-            in_buyers = st.slider("Market Reach (Buyers)", 100, 5000, value=int(row.get('unique_buyers', 500)))
-        with col_in2:
-            in_reviews = st.slider("Review Accumulation", 10, 1000, value=int(row.get('total_reviews', 100)))
-        with col_in3:
-            in_density = st.slider("Competitor Density", 0.0, 1.0, value=float(row.get('competitor_density', 0.5)))
-            
-        # Inference Prep
-        # Categories (Dummies)
-        cats = sorted(df["category"].unique())
-        cat_dums = [1.0 if c == row["category"] else 0.0 for c in cats]
-        
-        X_live = np.array(cat_dums + [
-            row.get("price_tier", 1),
-            in_buyers,
-            in_reviews,
-            in_density,
-            row.get("niche_share", 0.1)
-        ]).reshape(1, -1)
-        
-        try:
-            live_cate = causal_model.effect(X_live)[0]
-            
-            res_c1, res_c2 = st.columns([1, 1.5])
-            with res_c1:
-                st.markdown(metric_card("Live CATE Prediction", f"{live_cate:+.2%}", sub="Updated via EconML Inference"), unsafe_allow_html=True)
-            with res_c2:
-                delta = live_cate - row["cate"]
-                color = "#3fb950" if delta <= 0 else "#f85149"
-                st.markdown(f'<div class="glass-card" style="text-align: center; border-left: 4px solid {color};">'
-                            f'<div style="color: #8b949e; font-size: 12px;">Delta vs. Historical</div>'
-                            f'<div style="color: {color}; font-size: 24px; font-weight: 700;">{delta:+.2%}</div>'
-                            f'</div>', unsafe_allow_html=True)
-        except Exception as e:
-            st.error(f"Inference Engine Error: {e}")
-    else:
-        st.warning("⚠️ Live Inference Engine (EconML) is currently offline. Viewing pre-computed telemetry only.")
-
-    # --- PIPELINE VERIFICATION ---
-    st.markdown("---")
-    st.markdown('<div style="display: flex; justify-content: space-between; align-items: center;">'
-                '<div>'
-                '<span style="color: #3fb950; font-weight: 600;">✓ Pipeline Verified</span> | '
-                '<span style="color: #8b949e; font-size: 12px;">CausalForestDML Bootstrap (n=200)</span>'
-                '</div>'
-                '<div style="font-size: 11px; color: #58a6ff;">Artifact: models/causal_forest.pkl</div>'
-                '</div>', unsafe_allow_html=True)

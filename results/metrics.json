@@ -1,0 +1,9 @@
+{
+  "mean_cate": -0.2781,
+  "std_cate": 0.3965,
+  "n_estimators": 200,
+  "n_sellers_sampled": 25000,
+  "prevention_lift_pct": 19.6,
+  "model_validated": true,
+  "placebo_p_value": 0.38
+}

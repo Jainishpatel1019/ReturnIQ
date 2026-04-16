@@ -53,6 +53,9 @@ def run_causal_model(input_path: str = INPUT_PATH) -> None:
 
     print(f"▸ Loading features from {input_path} …")
     df = pd.read_parquet(input_path)
+    if len(df) > 25000:
+        print("  Sampling 25,000 rows for artifact generation …")
+        df = df.sample(25000, random_state=42)
     print(f"  Loaded {len(df):,} sellers")
 
     T = df["seller_quality_score"].values  # treatment

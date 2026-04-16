@@ -55,7 +55,24 @@ def load_data() -> pd.DataFrame:
                 st.error(f"Error reading {p}: {e}")
     return pd.DataFrame()
 
+@st.cache_resource
+def load_causal_model():
+    """Load the serialized EconML CausalForestDML model."""
+    model_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models/causal_forest.pkl")
+    # Handle HF root path
+    if not os.path.exists(model_path):
+        model_path = os.path.join(os.path.dirname(__file__), "models/causal_forest.pkl")
+    
+    if os.path.exists(model_path):
+        try:
+            import joblib
+            return joblib.load(model_path)
+        except Exception as e:
+            st.warning(f"Model load failed: {e}")
+    return None
+
 df_raw = load_data()
+causal_model = load_causal_model()
 
 if df_raw.empty:
     st.error("📉 **Data Load Failure**: Dashboard data not found.")
@@ -204,7 +221,7 @@ elif selected_view == 'Methodology':
 
 elif selected_view == 'Sellers':
     from views.seller_intel import render as render_sellers
-    render_sellers(df_raw)
+    render_sellers(df_raw, causal_model=causal_model)
 
 elif selected_view == 'Policy Simulator':
     from views.policy_sim import render as render_policy

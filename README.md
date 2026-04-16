@@ -1,43 +1,72 @@
-# ReturnIQ — Causal Intelligence for Marketplace Returns
+# ReturnIQ: Causal Intelligence for Marketplace Integrity
 
-[![CI](https://github.com/Jainishpatel1019/ReturnIQ/actions/workflows/ci.yml/badge.svg)](https://github.com/Jainishpatel1019/ReturnIQ/actions)
-[![HuggingFace Space](https://img.shields.io/badge/%F0%9F%A4%97%20HuggingFace-Space-blue)](https://huggingface.co/spaces/Jainishp1019/seller-intelligence-platform)
-[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
+[![Pipeline Status](https://github.com/Jainishpatel1019/ReturnIQ/actions/workflows/ci.yml/badge.svg)](https://github.com/Jainishpatel1019/ReturnIQ/actions)
+[![Demo](https://img.shields.io/badge/Demo-HuggingFace-blue)](https://huggingface.co/spaces/Jainishp1019/seller-intelligence-platform)
 
-**Why standard analytics fails:** Most platforms treat return rates as a simple performance metric. But if a seller moves high-risk goods (e.g., Electronics), they're penalized for their category, not their conduct.
-
-**ReturnIQ** is a causal-first platform that uses **Double Machine Learning (DML)** to isolate the true **Conditional Average Treatment Effect (CATE)** of seller operations, de-biasing findings from market-level noise.
+**ReturnIQ** is a production-grade causal inference terminal designed to isolate the true operational drivers of product returns across high-volume marketplaces. By leveraging **Double Machine Learning (DML)** and NLP-based feature engineering, we move beyond vanilla prediction to identify the *causal* impact of seller quality on customer dissatisfaction.
 
 ---
 
-## 🏗️ Production Architecture
-*This project implements a decoupled "Offline-to-Online" architecture used in real-world ML engineering.*
-
-1.  **Causal Engine (Offline)**:
-    *   **Data Scale**: Processed 3.7M Amazon reviews at scale using a DuckDB analytical warehouse.
-    *   **Feature Engineering**: Natural Language Processing (DistilBERT) to measure listing-to-review semantic alignment.
-    *   **Estimation**: Executed `CausalForestDML` (EconML) with 200-iteration bootstrap for high-dimensional de-biasing.
-    *   **Reasoning**: Batch-precomputed executive summaries for 1,000+ sellers using Mistral-7B.
-
-2.  **Telemetry Dashboard (Live Demo)**:
-    *   **Capability**: High-fidelity glassmorphism interface for executive reporting.
-    *   **Data**: Navigates the finalized causal intelligence results for a representative 5,000-seller sample.
-    *   **Sync**: The live demo provides zero-latency access to pre-computed causal rankings and SHAP explanations.
+### 1. The Problem
+Marketplace return rates are often treated as a prediction task, failing to account for confounding variables (price tiers, seasonality, category bias). A seller might have a high return rate simply because they sell electronics, not because of poor operations. ReturnIQ solves this by estimating the **Conditional Average Treatment Effect (CATE)**.
 
 ---
 
-## 📊 Key Results
-- **Operational Lift**: Operations drive **41%** of return rate variance in our sample.
-- **Accuracy**: 1.4x enhancement in risk ranking precision compared to random choice.
-- **Rigor**: Validated via Placebo Shuffle tests ($p \approx 0.38$) and AUUC ranking benchmarks.
+### 2. Live Demo
+![ReturnIQ Platform Demo](https://raw.githubusercontent.com/Jainishpatel1019/ReturnIQ/main/assets/demo.gif)
+> *Note: If GIF is not visible, visit the [Live HuggingFace Space](https://huggingface.co/spaces/Jainishp1019/seller-intelligence-platform).*
 
 ---
 
-## 🚀 Repository Navigation
-- `src/`: The heart of the platform. Causal estimation, NLP pipelines, and variance decomposition logic.
-- `streamlit_app/`: The visual interface and Glassmorphism design system.
-- `tests/`: Integrated test suite for statistical range check and data integrity.
+### 3. Key Findings (Pipeline Verified)
+| Metric | Value | Proof |
+| :--- | :--- | :--- |
+| **Returns Preventable** | 19.6% | Top 15% risk-targeted reduction |
+| **Operational Lift** | 1.31x | Targeting efficiency vs. random |
+| **Model AUUC** | 0.345 | Uplift curve validation |
+| **Placebo p-value** | 0.38 | PASS: No noise artifacts |
 
-## 👤 Author
-**Jainish Patel**  
-[GitHub](https://github.com/Jainishpatel1019)  ·  [HuggingFace](https://huggingface.co/Jainishp1019)
+---
+
+### 4. Technical Methodology
+We implement a multi-stage **Offline-to-Online** pipeline:
+1. **NLP Ground Truth**: DistilBERT-based scorers categorize 3.7M reviews into functional vs. accidental returns.
+2. **Causal Estimation**: EconML's `CausalForestDML` isolates the treatment effect (Seller Quality) from 12+ marketplace confounders.
+3. **Robustness**: 200-iteration bootstrap for 95% Confidence Intervals + Placebo robustness tests.
+
+---
+
+### 5. How to Reproduce
+ReturnIQ is designed for total reproducibility.
+
+```bash
+# 1. Clone & Setup
+git clone https://github.com/Jainishpatel1019/ReturnIQ.git
+pip install -r requirements.txt
+
+# 2. Run Reproducibility Pipeline (Notebooks)
+# Open and run notebooks/01 to 06 sequentially.
+# This will generate: data/processed/final_dashboard_data.parquet
+# And: models/causal_forest.pkl
+
+# 3. Launch Local Dashboard
+streamlit run streamlit_app/app.py
+```
+
+---
+
+### 6. Architecture & Limitations
+**Architecture**: See [ARCHITECTURE.md](ARCHITECTURE.md) for data flow diagrams.
+
+**Limitations**:
+- **Observational Data**: Subject to the Unconfoundedness assumption.
+- **Proxy Labels**: Return signals are inferred from 1-2 star reviews (functional dissatisfaction).
+- **Static Baseline**: Causal effects are estimated on the 2023 Amazon Review Corpus.
+
+---
+
+### 7. The Stack
+- **Engine**: EconML (Double ML), XGBoost
+- **NLP**: Transformers (DistilBERT base), Sentence-Transformers
+- **Data**: DuckDB, PyArrow
+- **Deploy**: Streamlit, Plotly, HuggingFace Spaces
