@@ -78,15 +78,8 @@
 }
 
 /* Hide Streamlit elements */
-#MainMenu,
-footer,
-header {
-    visibility: hidden;
-}
-
-.stDeployButton {
-    display: none;
-}
+#MainMenu, footer, header { visibility: hidden; }
+.stDeployButton { display: none; }
 
 /* Sidebar adjustments */
 .sidebar-logo {

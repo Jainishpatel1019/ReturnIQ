@@ -22,6 +22,7 @@ def render(df: pd.DataFrame) -> None:
         cate_lo = float(df["cate"].min())
         cate_hi = float(df["cate"].max())
         pad = (cate_hi - cate_lo) * 0.05
+        # 30 bins (not 50) so each bar is wide enough to see clearly
         fig = px.histogram(df, x="cate", nbins=30, color_discrete_sequence=["#58a6ff"])
         fig.update_layout(
             xaxis_title="Estimated Causal Effect (CATE)",

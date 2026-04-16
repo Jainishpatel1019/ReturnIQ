@@ -31,8 +31,10 @@ mlruns/
 .streamlit/
 streamlit_app/.streamlit/
 
-# ── Deployment bundle (HuggingFace target — generated, not source) ─────────────
-deploy/
+# ── Deployment bundle — committed so GitHub Actions can sync to HuggingFace ────
+# deploy/ is now tracked; only exclude generated artefacts inside it
+deploy/**/__pycache__/
+deploy/**/*.py[cod]
 
 # ── Logs ───────────────────────────────────────────────────────────────────────
 *.log

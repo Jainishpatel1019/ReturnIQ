@@ -32,17 +32,17 @@ if os.path.exists(css_path):
 
 @st.cache_data
 def load_data() -> pd.DataFrame:
-    # base_dir = project root (one level above streamlit_app/)
-    base_dir = os.path.dirname(os.path.dirname(__file__))
+    here = os.path.dirname(__file__)
     candidates = [
-        # Primary: project-root data/processed/
-        os.path.join(base_dir, "data/processed/final_dashboard_data.parquet"),
-        # Fallback: sample file at project-root data/processed/
-        os.path.join(base_dir, "data/processed/dashboard_sample.parquet"),
-        # Last resort: sample relative to CWD (e.g. HuggingFace Spaces)
-        os.path.join(base_dir, "data/sample/dashboard_sample.parquet"),
+        # deploy/data/processed/ — primary path inside the HF Space bundle
+        os.path.join(here, "data", "processed", "final_dashboard_data.parquet"),
+        # deploy/data/sample/ — lightweight fallback
+        os.path.join(here, "data", "sample", "dashboard_sample.parquet"),
+        # project-root data/ — local dev fallback
+        os.path.join(here, "..", "data", "processed", "final_dashboard_data.parquet"),
     ]
     for p in candidates:
+        p = os.path.normpath(p)
         if pathlib.Path(p).exists():
             try:
                 return pd.read_parquet(p)
@@ -128,6 +128,7 @@ if selected_view == 'Dashboard':
     
     with c2:
         st.markdown('<div style="color: #f0f6fc; font-size: 14px; font-weight: 600; margin-bottom: 20px;">Risk Density (CATE Distribution)</div>', unsafe_allow_html=True)
+        # Replacing random trend with actual data distribution
         if not df.empty:
             hist_data = df["cate"].sample(min(2000, len(df)), random_state=42)
             clo, chi = float(hist_data.min()), float(hist_data.max())
