@@ -32,19 +32,23 @@ def render(df: pd.DataFrame) -> None:
 
     st.markdown(section_header("The Discrepancy Map", "Highlighting sellers where OLS got it wrong"), unsafe_allow_html=True)
     
-    # Improved scatter with better visibility and fixed range
+    # Improved scatter with better visibility and fixed range bypassing px.scatter numpy bugs
     sample_size = min(2000, len(df))
     plot_df = df.sample(sample_size, random_state=42)
     
-    fig1 = px.scatter(
-        plot_df, 
-        x="ols_pred", 
-        y="cate", 
-        color="category",
-        hover_data=["seller_id", "proxy_return_rate"],
-        opacity=0.6,
-        size_max=10
-    )
+    fig1 = go.Figure()
+    for cat in plot_df["category"].unique():
+        cdf = plot_df[plot_df["category"] == cat]
+        fig1.add_trace(go.Scatter(
+            x=cdf["ols_pred"].tolist(),
+            y=cdf["cate"].tolist(),
+            mode='markers',
+            name=str(cat),
+            marker=dict(opacity=0.6, size=6),
+            text=cdf["seller_id"].tolist(),
+            hovertemplate="<b>%{text}</b><br>OLS: %{x:.2f}<br>CATE: %{y:.2f}<extra></extra>"
+        ))
+
     
     # Add a diagonal 'Equality' line (where OLS == Causal)
     min_val = min(df["ols_pred"].min(), df["cate"].min())
@@ -85,8 +89,8 @@ def render(df: pd.DataFrame) -> None:
     x_o, y_o = get_auuc_coords(df, "ols_pred", "proxy_return_rate")
     
     fig3 = go.Figure()
-    fig3.add_trace(go.Scatter(x=x_c, y=y_c, name="ReturnIQ (Causal)", line=dict(color="#58a6ff", width=3)))
-    fig3.add_trace(go.Scatter(x=x_o, y=y_o, name="Naive OLS", line=dict(color="#d29922", width=2, dash="dash")))
+    fig3.add_trace(go.Scatter(x=x_c.tolist(), y=y_c.tolist(), name="ReturnIQ (Causal)", line=dict(color="#58a6ff", width=3)))
+    fig3.add_trace(go.Scatter(x=x_o.tolist(), y=y_o.tolist(), name="Naive OLS", line=dict(color="#d29922", width=2, dash="dash")))
     fig3.add_trace(go.Scatter(x=[0, 100], y=[0, 100], name="Random Choice", line=dict(color="#8b949e", width=1, dash="dot")))
     
     fig3.update_layout(

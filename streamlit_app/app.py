@@ -135,7 +135,7 @@ if selected_view == 'Dashboard':
             counts, bins = np.histogram(hist_data, bins=25)
             bin_centers = 0.5 * (bins[1:] + bins[:-1])
             fig_dist = go.Figure(go.Scatter(
-                x=bin_centers, y=counts, fill='tozeroy',
+                x=bin_centers.tolist(), y=counts.tolist(), fill='tozeroy',
                 line=dict(color='#58a6ff', width=2)
             ))
             fig_dist.update_layout(

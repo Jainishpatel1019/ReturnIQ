@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import sys
 import os
 
@@ -22,7 +23,11 @@ def render(df: pd.DataFrame) -> None:
         cate_lo = float(df["cate"].min())
         cate_hi = float(df["cate"].max())
         pad = (cate_hi - cate_lo) * 0.05
-        fig = px.histogram(df, x="cate", nbins=30, color_discrete_sequence=["#58a6ff"])
+        fig = go.Figure(go.Histogram(
+            x=df["cate"].tolist(),
+            nbinsx=30,
+            marker_color="#58a6ff"
+        ))
         fig.update_layout(
             xaxis_title="Estimated Causal Effect (CATE)",
             yaxis_title="Number of Sellers",
